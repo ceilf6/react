@@ -195,6 +195,7 @@ function flushWork(initialTime: number) {
   }
 }
 
+// 任务队列执行管理
 /**
  * 
  * @param {*} initialTime 做当前任务的开始时间
@@ -490,13 +491,20 @@ let taskTimeoutID: TimeoutID = (-1: any);
 let frameInterval: number = frameYieldMs;
 let startTime = -1;
 
+// 判断任务执行阻塞时间是否会导致丢帧、需要归还主线程
 function shouldYieldToHost(): boolean {
   if (!enableAlwaysYieldScheduler && enableRequestPaint && needsPaint) {
     // Yield now.
     return true;
   }
+  // startTime 是全局变量，记录的任务开始时间（初始默认-1
   const timeElapsed = getCurrentTime() - startTime;
   if (timeElapsed < frameInterval) {
+    // frame 帧
+    // interval 间隔
+    // 一帧时间，如果小于的话说明主线程阻塞时间不会导致丢帧，无需归还
+    // 来自 Flags 默认 export const frameYieldMs = 5; 5ms
+
     // The main thread has only been blocked for a really short amount of time;
     // smaller than a single frame. Don't yield yet.
     return false;
