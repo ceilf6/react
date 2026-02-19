@@ -103,19 +103,23 @@ const localClearTimeout =
 const localSetImmediate =
   typeof setImmediate !== 'undefined' ? setImmediate : null; // IE and Node.js + jsdom
 
+// 该方法用于遍历 timerQueue 判断是否有已经到期的任务
+// 如果有，将这个任务放入到 taskQueue
 function advanceTimers(currentTime: number) {
   // Check for tasks that are no longer delayed and add them to the queue.
-  let timer = peek(timerQueue);
+  let timer = peek(timerQueue); // 拿取一个任务
+  // 循环遍历整个 timerQueue
   while (timer !== null) {
-    if (timer.callback === null) {
+    if (timer.callback === null) { // 任务没有需要执行的 callback
       // Timer was cancelled.
-      pop(timerQueue);
+      pop(timerQueue); // 出去
     } else if (timer.startTime <= currentTime) {
+      // 当任务到期，加入 taskQueue
       // Timer fired. Transfer to the task queue.
       pop(timerQueue);
       timer.sortIndex = timer.expirationTime;
-      push(taskQueue, timer);
-      if (enableProfiling) {
+      push(taskQueue, timer); // 推入 taskQueue
+      if (enableProfiling) { // 资料收集 - 目前与我研究无关
         markTaskStart(timer, currentTime);
         timer.isQueued = true;
       }
