@@ -1,3 +1,5 @@
+// ptr
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -9,7 +11,7 @@
 
 /* eslint-disable no-var */
 
-import type {PriorityLevel} from '../SchedulerPriorities';
+import type { PriorityLevel } from '../SchedulerPriorities';
 
 import {
   enableProfiling,
@@ -21,7 +23,7 @@ import {
   enableAlwaysYieldScheduler,
 } from '../SchedulerFeatureFlags';
 
-import {push, pop, peek} from '../SchedulerMinHeap';
+import { push, pop, peek } from '../SchedulerMinHeap';
 
 // TODO: Use symbols?
 import {
@@ -307,7 +309,7 @@ function unstable_next<T>(eventHandler: () => T): T {
   }
 }
 
-function unstable_wrapCallback<T: (...Array<mixed>) => mixed>(callback: T): T {
+function unstable_wrapCallback<T: (...Array<mixed>) => mixed > (callback: T): T {
   var parentPriorityLevel = currentPriorityLevel;
   // $FlowFixMe[incompatible-return]
   // $FlowFixMe[missing-this-annot]
@@ -327,7 +329,7 @@ function unstable_wrapCallback<T: (...Array<mixed>) => mixed>(callback: T): T {
 function unstable_scheduleCallback(
   priorityLevel: PriorityLevel,
   callback: Callback,
-  options?: {delay: number},
+  options?: { delay: number },
 ): Task {
   var currentTime = getCurrentTime();
 
@@ -470,7 +472,7 @@ function forceFrameRate(fps: number) {
     // Using console['error'] to evade Babel and ESLint
     console['error'](
       'forceFrameRate takes a positive int between 0 and 125, ' +
-        'forcing frame rates higher than 125 fps is not supported',
+      'forcing frame rates higher than 125 fps is not supported',
     );
     return;
   }
@@ -591,8 +593,8 @@ export const unstable_Profiling: {
   startLoggingProfilingEvents(): void,
   stopLoggingProfilingEvents(): ArrayBuffer | null,
 } | null = enableProfiling
-  ? {
+    ? {
       startLoggingProfilingEvents,
       stopLoggingProfilingEvents,
     }
-  : null;
+    : null;
