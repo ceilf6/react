@@ -536,6 +536,8 @@ const performWorkUntilDeadline = () => {
 };
 
 let schedulePerformWorkUntilDeadline;
+// 初始化之后
+// 根据不同的环境选择不同的生成宏任务的方式，大多数是实例化 MessageChannel 进行后续调度
 if (typeof localSetImmediate === 'function') {
   // Node.js and old IE.
   // There's a few reasons for why we prefer setImmediate.
@@ -552,6 +554,9 @@ if (typeof localSetImmediate === 'function') {
     localSetImmediate(performWorkUntilDeadline);
   };
 } else if (typeof MessageChannel !== 'undefined') {
+  // 基本上都使用 MessageChannel 
+  // https://github.com/ceilf6/Lab/commit/33451f8e00083cb9f6606d484669431c6b1aa668
+
   // DOM and Worker environments.
   // We prefer MessageChannel because of the 4ms setTimeout clamping.
   const channel = new MessageChannel();
@@ -565,11 +570,18 @@ if (typeof localSetImmediate === 'function') {
   schedulePerformWorkUntilDeadline = () => {
     // $FlowFixMe[not-a-function] nullable value
     localSetTimeout(performWorkUntilDeadline, 0);
+    // setTimeout 兜底
   };
 }
 
+// 调度普通任务 
+// 调用schedulePerformWorkUntilDeadline - 根据不同的环境选择不同的生成宏任务的方式，大多数是实例化 MessageChannel 进行后续调度
+/*
+不再每次传 callback ，而是统一执行一个 workLoop
+从回调任务驱动转为队列驱动 
+*/
 function requestHostCallback() {
-  if (!isMessageLoopRunning) {
+  if (!isMessageLoopRunning) { // 开关
     isMessageLoopRunning = true;
     schedulePerformWorkUntilDeadline();
   }
