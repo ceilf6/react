@@ -51,11 +51,11 @@ export type Callback = boolean => ?Callback;
 export opaque type Task = {
   id: number,
   callback: Callback | null,
-  priorityLevel: PriorityLevel,
+  priorityLevel: PriorityLevel, // 任务优先级
   startTime: number,
-  expirationTime: number,
+  expirationTime: number, // 过期时间
   sortIndex: number,
-  isQueued?: boolean,
+  isQueued?: boolean, // 是否在队列中
 };
 
 let getCurrentTime: () => number | DOMHighResTimeStamp;
@@ -63,6 +63,7 @@ const hasPerformanceNow =
   // $FlowFixMe[method-unbinding]
   typeof performance === 'object' && typeof performance.now === 'function';
 
+// getCurrentTime 工具函数获取当前时间
 if (hasPerformanceNow) {
   const localPerformance = performance;
   getCurrentTime = () => localPerformance.now();
@@ -77,9 +78,10 @@ if (hasPerformanceNow) {
 // 0b111111111111111111111111111111
 var maxSigned31BitInt = 1073741823;
 
-// Tasks are stored on a min heap
-var taskQueue: Array<Task> = [];
-var timerQueue: Array<Task> = [];
+// Tasks are stored on a min heap - 小顶堆 => 优先级
+// Scheduler 有两个任务队列数组
+var taskQueue: Array<Task> = []; // 普通任务队列
+var timerQueue: Array<Task> = []; // 延时任务队列
 
 // Incrementing id counter. Used to maintain insertion order.
 var taskIdCounter = 1;
@@ -92,6 +94,7 @@ var isPerformingWork = false;
 
 var isHostCallbackScheduled = false;
 var isHostTimeoutScheduled = false;
+// isHostTimeoutScheduled 表示的是是否已经向宿主环境注册了一个等待中的 timeout（setTimeout）
 
 var needsPaint = false;
 
@@ -326,14 +329,17 @@ function unstable_wrapCallback<T: (...Array<mixed>) => mixed > (callback: T): T 
   };
 }
 
+// 入口
+// 用于调度任务
 function unstable_scheduleCallback(
-  priorityLevel: PriorityLevel,
-  callback: Callback,
-  options?: { delay: number },
-): Task {
+  priorityLevel: PriorityLevel, // 任务优先级
+  callback: Callback, // 任务内容
+  options?: { delay: number }, // 可选参数: 推迟时间
+): Task { // 返回一个任务对象
   var currentTime = getCurrentTime();
 
   var startTime;
+  // 延时时间设置
   if (typeof options === 'object' && options !== null) {
     var delay = options.delay;
     if (typeof delay === 'number' && delay > 0) {
@@ -346,6 +352,8 @@ function unstable_scheduleCallback(
   }
 
   var timeout;
+  // 根据传入的优先级设置 timeout
+  // from '../SchedulerFeatureFlags' 配置常数统一管理文件
   switch (priorityLevel) {
     case ImmediatePriority:
       // Times out immediately
@@ -370,26 +378,36 @@ function unstable_scheduleCallback(
       break;
   }
 
+  // 计算得到过期时间: 开始时间 + timeout
+  // 一般是比当前时间晚，表示任务的执行时间
+  // timeout 在 immediately 时是 -1 ，比当前时间早，代表紧急任务
   var expirationTime = startTime + timeout;
 
+  // 创建新任务
   var newTask: Task = {
     id: taskIdCounter++,
-    callback,
+    callback, // 传入的任务具体内容
     priorityLevel,
     startTime,
     expirationTime,
-    sortIndex: -1,
+    sortIndex: -1, // 用于小顶堆排序的索引 => 优先级
   };
   if (enableProfiling) {
+    // 从 SchedulerFeatureFlags 导入的表示是否排序的全局变量
     newTask.isQueued = false;
   }
 
-  if (startTime > currentTime) {
+  if (startTime > currentTime) { // 设置了 delay 的，即延时任务
     // This is a delayed task.
     newTask.sortIndex = startTime;
-    push(timerQueue, newTask);
+    push(timerQueue, newTask); // 延时任务推入到 timerQueue
+    // peek 拿出一个任务
     if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
+      // taskQueue 任务执行完毕，且 timerQueue 取出的任务就是当前任务
       // All tasks are delayed, and this is the task with the earliest delay.
+
+      // 下面的 if...else 就是一个开关
+      // isHostTimeoutScheduled 表示的是是否已经向宿主环境注册了一个等待中的 timeout（setTimeout）
       if (isHostTimeoutScheduled) {
         // Cancel an existing timeout.
         cancelHostTimeout();
@@ -397,10 +415,13 @@ function unstable_scheduleCallback(
         isHostTimeoutScheduled = true;
       }
       // Schedule a timeout.
+      // 如果是延时任务，调用 requestHostTimeout 进行任务调度
       requestHostTimeout(handleTimeout, startTime - currentTime);
     }
   } else {
-    newTask.sortIndex = expirationTime;
+    // 普通任务
+    newTask.sortIndex = expirationTime; // 优先级排序
+    // 普通任务推入到 taskQueue
     push(taskQueue, newTask);
     if (enableProfiling) {
       markTaskStart(newTask, currentTime);
@@ -411,10 +432,11 @@ function unstable_scheduleCallback(
     if (!isHostCallbackScheduled && !isPerformingWork) {
       isHostCallbackScheduled = true;
       requestHostCallback();
+      // 最终调用 requestHostCallback 进行任务调度
     }
   }
 
-  return newTask;
+  return newTask; // 返回一个新任务
 }
 
 function unstable_cancelCallback(task: Task) {

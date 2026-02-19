@@ -8,6 +8,7 @@
  */
 
 export const enableProfiling = false;
+// 在 Scheduler 中表示是否排序的全局变量
 export const frameYieldMs = 5;
 
 export const userBlockingPriorityTimeout = 250;
