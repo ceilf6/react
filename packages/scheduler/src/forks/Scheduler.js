@@ -504,12 +504,24 @@ function forceFrameRate(fps: number) {
   }
 }
 
+// 浏览器宏任务里的调度入口
+/*
+在一个宏任务中尽可能多地执行任务，“直到期限”
+如果还有任务没做完，就安排下一个宏任务继续。
+*/
 const performWorkUntilDeadline = () => {
   if (enableRequestPaint) {
+    // 重置是否需要触发浏览器绘制
+    // React 18 开始支持 requestPaint(), 这个标记用于控制是否提前让出主线程
     needsPaint = false;
   }
-  if (isMessageLoopRunning) {
+  if (isMessageLoopRunning) { // 防止重复启动消息循环
     const currentTime = getCurrentTime();
+    // 这里的 startTime 并非 unstable_scheduleCallback 方法里面的 startTime, 而是一个全局变量，默认值为 -1
+    // 用来测量任务的执行时间，从而能够知道主线程被阻塞了多久
+    // 记录开始时间 => 时间切片
+    // shouldYield() 里会用 getCurrentTime() - startTime > frameInterval 判断是否该让出线程
+
     // Keep track of the start time so we can measure how long the main thread
     // has been blocked.
     startTime = currentTime;
@@ -519,16 +531,21 @@ const performWorkUntilDeadline = () => {
     //
     // Intentionally not using a try-catch, since that makes some debugging
     // techniques harder. Instead, if `flushWork` errors, then `hasMoreWork` will
-    // remain true, and we'll continue the work loop.
+
+    // 不用 try-catch 是因为 React 希望错误直接冒泡到浏览器，否则 浏览器 devtools 堆栈会被吞
+    // 默认还有需要做的任务 => remain true, and we'll continue the work loop.
     let hasMoreWork = true;
     try {
-      hasMoreWork = flushWork(currentTime);
+      hasMoreWork = flushWork(currentTime); // 执行任务
+      // 返回布尔值, 如果 true 表示工作没做完
     } finally {
       if (hasMoreWork) {
         // If there's more work, schedule the next message event at the end
         // of the preceding one.
+        // 如果没做完就进行宏任务调度 messageChannel 将任务放到任务队列中，方便浏览器下一次调度
         schedulePerformWorkUntilDeadline();
       } else {
+        // 任务做完时，设置消息通道为冷却状态
         isMessageLoopRunning = false;
       }
     }
