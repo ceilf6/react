@@ -144,6 +144,11 @@ function handleTimeout(currentTime: number) {
   }
 }
 
+/**
+ * 
+ * @param {*} initialTime 做当前任务的开始时间
+ * @returns 
+ */
 function flushWork(initialTime: number) {
   if (enableProfiling) {
     markSchedulerUnsuspended(initialTime);
@@ -162,11 +167,13 @@ function flushWork(initialTime: number) {
   try {
     if (enableProfiling) {
       try {
+        // 核心：调用 workLoop 
         return workLoop(initialTime);
       } catch (error) {
         if (currentTask !== null) {
           const currentTime = getCurrentTime();
           // $FlowFixMe[incompatible-call] found when upgrading Flow
+          // 因为用了 try-catch 得手动标记任务出错
           markTaskErrored(currentTask, currentTime);
           // $FlowFixMe[incompatible-use] found when upgrading Flow
           currentTask.isQueued = false;
@@ -183,22 +190,33 @@ function flushWork(initialTime: number) {
     isPerformingWork = false;
     if (enableProfiling) {
       const currentTime = getCurrentTime();
-      markSchedulerSuspended(currentTime);
+      markSchedulerSuspended(currentTime); // 时间记录 - 结束时间
     }
   }
 }
 
+/**
+ * 
+ * @param {*} initialTime 做当前任务的开始时间
+ * @returns 
+ */
 function workLoop(initialTime: number) {
   let currentTime = initialTime;
+
+  // 该方法用于遍历 timerQueue 判断是否有已经到期的任务
+  // 如果有，将这个任务放入到 taskQueue
   advanceTimers(currentTime);
-  currentTask = peek(taskQueue);
+
+  currentTask = peek(taskQueue); // 从 taskQueue 取任务
   while (currentTask !== null) {
     if (!enableAlwaysYieldScheduler) {
       if (currentTask.expirationTime > currentTime && shouldYieldToHost()) {
+        // 任务还没有过期 && 任务暂停、归还主线程渲染
         // This currentTask hasn't expired, and we've reached the deadline.
-        break;
+        break; // 就退出 while 循环
       }
     }
+    // 到过期时间并且无需归还主线程 => 那么就执行任务即可
     // $FlowFixMe[incompatible-use] found when upgrading Flow
     const callback = currentTask.callback;
     if (typeof callback === 'function') {
@@ -209,9 +227,12 @@ function workLoop(initialTime: number) {
       // $FlowFixMe[incompatible-use] found when upgrading Flow
       const didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
       if (enableProfiling) {
+        // enable: 使能
+        // profiling: 收集信息
         // $FlowFixMe[incompatible-call] found when upgrading Flow
         markTaskRun(currentTask, currentTime);
       }
+      // 执行 callback 任务
       const continuationCallback = callback(didUserCallbackTimeout);
       currentTime = getCurrentTime();
       if (typeof continuationCallback === 'function') {
@@ -240,7 +261,7 @@ function workLoop(initialTime: number) {
     } else {
       pop(taskQueue);
     }
-    currentTask = peek(taskQueue);
+    currentTask = peek(taskQueue); // 继续下一个任务
     if (enableAlwaysYieldScheduler) {
       if (currentTask === null || currentTask.expirationTime > currentTime) {
         // This currentTask hasn't expired we yield to the browser task.
@@ -250,12 +271,15 @@ function workLoop(initialTime: number) {
   }
   // Return whether there's additional work
   if (currentTask !== null) {
-    return true;
+    return true; // 如果不为空，说明还有下一个任务，就返回 true 给 hasMoreWork
   } else {
+    // 如果空了，只说明 taskQueue 普通任务都执行了，但是还需要 timerQueue
     const firstTimer = peek(timerQueue);
     if (firstTimer !== null) {
+      // 延时任务调用 timerQueue
       requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
     }
+    // 没有进入 if 说明延时任务队列也空了，就返回 false 给 hasMoreWork
     return false;
   }
 }
@@ -506,7 +530,7 @@ function forceFrameRate(fps: number) {
 
 // 浏览器宏任务里的调度入口
 /*
-在一个宏任务中尽可能多地执行任务，“直到期限”
+在一个宏任务中尽可能多地执行任务，"UntilDeadline"-“直到期限”
 如果还有任务没做完，就安排下一个宏任务继续。
 */
 const performWorkUntilDeadline = () => {
