@@ -14,7 +14,7 @@ import {
 } from 'react-native/Libraries/ReactPrivate/ReactNativePrivateInterface';
 import isArray from 'shared/isArray';
 
-import type {AttributeConfiguration} from './ReactNativeTypes';
+import type { AttributeConfiguration } from './ReactNativeTypes';
 
 const emptyObject = {};
 
@@ -30,7 +30,7 @@ const emptyObject = {};
 type NestedNode = Array<NestedNode> | Object;
 
 // Tracks removed keys
-let removedKeys: {[string]: boolean} | null = null;
+let removedKeys: { [string]: boolean } | null = null;
 let removedKeyCount = 0;
 
 const deepDifferOptions = {
@@ -272,12 +272,14 @@ function diffProperties(
   nextProps: Object,
   validAttributes: AttributeConfiguration,
 ): null | Object {
-  let attributeConfig;
-  let nextProp;
-  let prevProp;
+  let attributeConfig; // 通过 attributeConfig 实现跨平台支持
+  let nextProp; // 更新后属性
+  let prevProp; // 更新前属性
 
+  // 第一次找更新
+  // 标记更新前后有变化的属性
   for (const propKey in nextProps) {
-    attributeConfig = validAttributes[propKey];
+    attributeConfig = validAttributes[propKey]; // 通用架构
     if (!attributeConfig) {
       continue; // not a valid native prop
     }
@@ -341,8 +343,10 @@ function diffProperties(
     if (typeof attributeConfig !== 'object') {
       // case: !Object is the default case
       if (defaultDiffer(prevProp, nextProp)) {
+        // 旧版本是直接 nextProp !== lastProp
+        // 为了 diff 策略可插拔
         // a normal leaf has changed
-        (updatePayload || (updatePayload = ({}: {[string]: $FlowFixMe})))[
+        (updatePayload || (updatePayload = ({}: { [string]: $FlowFixMe })))[
           propKey
         ] = nextProp;
       }
@@ -360,9 +364,9 @@ function diffProperties(
         const nextValue =
           typeof attributeConfig.process === 'function'
             ? // $FlowFixMe[incompatible-use] found when upgrading Flow
-              attributeConfig.process(nextProp)
+            attributeConfig.process(nextProp)
             : nextProp;
-        (updatePayload || (updatePayload = ({}: {[string]: $FlowFixMe})))[
+        (updatePayload || (updatePayload = ({}: { [string]: $FlowFixMe })))[
           propKey
         ] = nextValue;
       }
@@ -393,6 +397,8 @@ function diffProperties(
   // removed and make sure native gets the signal so it can reset them to the
   // default.
   for (const propKey in prevProps) {
+    // 找删除 - 更新前有 for .. in prevProps
+    // 更新后没有 nextProps[propKey] === undefined
     if (nextProps[propKey] !== undefined) {
       continue; // we've already covered this key in the previous pass
     }
@@ -418,11 +424,11 @@ function diffProperties(
     ) {
       // case: CustomAttributeConfiguration | !Object
       // Flag the leaf property for removal by sending a sentinel.
-      (updatePayload || (updatePayload = ({}: {[string]: $FlowFixMe})))[
+      (updatePayload || (updatePayload = ({}: { [string]: $FlowFixMe })))[
         propKey
       ] = null;
       if (!removedKeys) {
-        removedKeys = ({}: {[string]: boolean});
+        removedKeys = ({}: { [string]: boolean });
       }
       if (!removedKeys[propKey]) {
         removedKeys[propKey] = true;

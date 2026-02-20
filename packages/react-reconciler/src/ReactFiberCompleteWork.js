@@ -465,6 +465,7 @@ function updateHostContainer(current: null | Fiber, workInProgress: Fiber) {
 }
 }
 
+// completeWork 的 update 阶段属性更新标记
 function updateHostComponent(
   current: Fiber,
   workInProgress: Fiber,
@@ -490,6 +491,7 @@ function updateHostComponent(
     // This guarantees that we can reuse all of them.
     const requiresClone = doesRequireClone(current, workInProgress);
     if (!requiresClone && oldProps === newProps) {
+      // 没有变化 - reuse 复用
       // No changes, just reuse the existing instance.
       // Note that this might release a previous clone.
       workInProgress.stateNode = currentInstance;
