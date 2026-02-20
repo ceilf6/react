@@ -10,20 +10,28 @@
 type Heap<T: Node> = Array<T>;
 type Node = {
   id: number,
-  sortIndex: number,
+  sortIndex: number, // 延时时间
   ...
 };
 
+// 新增元素
+/**
+ * 
+ * @param {*} heap taskQueue / timerQueue
+ * @param {*} node 新增节点对象
+ */
 export function push<T: Node>(heap: Heap<T>, node: T): void {
   const index = heap.length;
   heap.push(node);
-  siftUp(heap, node, index);
+  siftUp(heap, node, index); // 新增到数组末尾后向上调整
 }
 
+// 拿取堆顶-最小元素，但是没有出堆。在 Scheduler 中一般用于判队任务队列是否空
 export function peek<T: Node>(heap: Heap<T>): T | null {
   return heap.length === 0 ? null : heap[0];
 }
 
+// 出堆
 export function pop<T: Node>(heap: Heap<T>): T | null {
   if (heap.length === 0) {
     return null;
@@ -34,7 +42,7 @@ export function pop<T: Node>(heap: Heap<T>): T | null {
     // $FlowFixMe[incompatible-type]
     heap[0] = last;
     // $FlowFixMe[incompatible-call]
-    siftDown(heap, last, 0);
+    siftDown(heap, last, 0); // 出堆后向下调整
   }
   return first;
 }
@@ -88,6 +96,7 @@ function siftDown<T: Node>(heap: Heap<T>, node: T, i: number): void {
   }
 }
 
+// 辅助函数，用于调整时比较节点
 function compare(a: Node, b: Node) {
   // Compare sort index first, then task id.
   const diff = a.sortIndex - b.sortIndex;
