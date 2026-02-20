@@ -18,3 +18,8 @@
 // the failure isn't silent.
 
 throw new Error('This module must be shimmed by a specific renderer.');
+
+/*
+ReactFiberConfig 在源码里是一个占位文件。
+真正的实现会在打包阶段被替换成对应 renderer 的 HostConfig。
+*/

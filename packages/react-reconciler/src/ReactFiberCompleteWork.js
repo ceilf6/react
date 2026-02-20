@@ -7,10 +7,10 @@
  * @flow
  */
 
-import type {Fiber, FiberRoot} from './ReactInternalTypes';
-import type {RootState} from './ReactFiberRoot';
-import type {Lanes, Lane} from './ReactFiberLane';
-import type {ReactScopeInstance, ReactContext} from 'shared/ReactTypes';
+import type { Fiber, FiberRoot } from './ReactInternalTypes';
+import type { RootState } from './ReactFiberRoot';
+import type { Lanes, Lane } from './ReactFiberLane';
+import type { ReactScopeInstance, ReactContext } from 'shared/ReactTypes';
 import type {
   Instance,
   Type,
@@ -19,7 +19,7 @@ import type {
   ChildSet,
   Resource,
 } from './ReactFiberConfig';
-import type {ActivityState} from './ReactFiberActivityComponent';
+import type { ActivityState } from './ReactFiberActivityComponent';
 import type {
   SuspenseState,
   SuspenseListRenderState,
@@ -29,8 +29,8 @@ import type {
   OffscreenState,
   OffscreenQueue,
 } from './ReactFiberOffscreenComponent';
-import type {TracingMarkerInstance} from './ReactFiberTracingMarkerComponent';
-import type {Cache} from './ReactFiberCacheComponent';
+import type { TracingMarkerInstance } from './ReactFiberTracingMarkerComponent';
+import type { Cache } from './ReactFiberCacheComponent';
 import {
   enableLegacyHidden,
   enableSuspenseCallback,
@@ -43,7 +43,7 @@ import {
   enableSuspenseyImages,
 } from 'shared/ReactFeatureFlags';
 
-import {now} from './Scheduler';
+import { now } from './Scheduler';
 
 import {
   FunctionComponent,
@@ -128,6 +128,10 @@ import {
   preloadInstance,
   preloadResource,
 } from './ReactFiberConfig';
+/*
+ReactFiberConfig 在源码里是一个占位文件。
+真正的实现会在打包阶段被替换成对应 renderer 的 HostConfig。
+*/
 import {
   getRootHostContainer,
   popHostContext,
@@ -144,14 +148,14 @@ import {
   ForceSuspenseFallback,
   setDefaultShallowSuspenseListContext,
 } from './ReactFiberSuspenseContext';
-import {popHiddenContext} from './ReactFiberHiddenContext';
-import {findFirstSuspended} from './ReactFiberSuspenseComponent';
+import { popHiddenContext } from './ReactFiberHiddenContext';
+import { findFirstSuspended } from './ReactFiberSuspenseComponent';
 import {
   isContextProvider as isLegacyContextProvider,
   popContext as popLegacyContext,
   popTopLevelContextObject as popTopLevelLegacyContextObject,
 } from './ReactFiberLegacyContext';
-import {popProvider} from './ReactFiberNewContext';
+import { popProvider } from './ReactFiberNewContext';
 import {
   prepareToHydrateHostInstance,
   prepareToHydrateHostTextInstance,
@@ -179,18 +183,18 @@ import {
   claimNextRetryLane,
   includesOnlySuspenseyCommitEligibleLanes,
 } from './ReactFiberLane';
-import {resetChildFibers} from './ReactChildFiber';
-import {createScopeInstance} from './ReactFiberScope';
-import {transferActualDuration} from './ReactProfilerTimer';
-import {popCacheProvider} from './ReactFiberCacheComponent';
-import {popTreeContext, pushTreeFork} from './ReactFiberTreeContext';
-import {popRootTransition, popTransition} from './ReactFiberTransition';
+import { resetChildFibers } from './ReactChildFiber';
+import { createScopeInstance } from './ReactFiberScope';
+import { transferActualDuration } from './ReactProfilerTimer';
+import { popCacheProvider } from './ReactFiberCacheComponent';
+import { popTreeContext, pushTreeFork } from './ReactFiberTreeContext';
+import { popRootTransition, popTransition } from './ReactFiberTransition';
 import {
   popMarkerInstance,
   popRootMarkerInstance,
 } from './ReactFiberTracingMarkerComponent';
-import {suspendCommit} from './ReactFiberThenable';
-import type {Flags} from './ReactFiberFlags';
+import { suspendCommit } from './ReactFiberThenable';
+import type { Flags } from './ReactFiberFlags';
 
 /**
  * Tag the fiber with an update effect. This turns a Placement into
@@ -239,6 +243,8 @@ function doesRequireClone(current: null | Fiber, completedWork: Fiber) {
   return false;
 }
 
+// completeWork 第二步 
+// 处理下一级的 DOM 元素
 function appendAllChildren(
   parent: Instance,
   workInProgress: Fiber,
@@ -285,7 +291,9 @@ function appendAllChildren(
     // children to find all the terminal nodes.
     let node = workInProgress.child;
     while (node !== null) {
+      // 步骤 1，深度优先 - 向下遍历，对第一层 DOM 元素执行 appendChild
       if (node.tag === HostComponent) {
+        // 对 HostComponent、HostText 执行 appendChild
         let instance = node.stateNode;
         if (needsVisibilityToggle && isHidden) {
           // This child is inside a timed out tree. Hide it.
@@ -323,22 +331,27 @@ function appendAllChildren(
           /* isHidden */ true,
         );
       } else if (node.child !== null) {
+        // 继续向下遍历，直到找到第一层 DOM 元素类型
         node.child.return = node;
         node = node.child;
         continue;
       }
       if (node === workInProgress) {
+        // 终止情况 1: 遍历到 parent 对应的 FiberNode
         return;
       }
       // $FlowFixMe[incompatible-use] found when upgrading Flow
       while (node.sibling === null) {
+        // 如果没有兄弟 FiberNode，则向父 FiberNode 遍历
         // $FlowFixMe[incompatible-use] found when upgrading Flow
         if (node.return === null || node.return === workInProgress) {
+          // 终止情况 2: 回到最初执行步骤 1 所在层
           return;
         }
         node = node.return;
       }
       // $FlowFixMe[incompatible-use] found when upgrading Flow
+      // 对兄弟 FiberNode 执行步骤 1
       node.sibling.return = node.return;
       node = node.sibling;
     }
@@ -434,22 +447,22 @@ function updateHostContainer(current: null | Fiber, workInProgress: Fiber) {
         containerInfo: Container,
         pendingChildren: ChildSet,
         ...
-      } = workInProgress.stateNode;
-      const container = portalOrRoot.containerInfo;
-      const newChildSet = createContainerChildSet();
-      // If children might have changed, we have to add them all to the set.
-      appendAllChildrenToContainer(
-        newChildSet,
-        workInProgress,
+    } = workInProgress.stateNode;
+    const container = portalOrRoot.containerInfo;
+    const newChildSet = createContainerChildSet();
+    // If children might have changed, we have to add them all to the set.
+    appendAllChildrenToContainer(
+      newChildSet,
+      workInProgress,
         /* needsVisibilityToggle */ false,
         /* isHidden */ false,
-      );
-      portalOrRoot.pendingChildren = newChildSet;
-      // Schedule an update on the container to swap out the container.
-      markUpdate(workInProgress);
-      finalizeContainerChildren(container, newChildSet);
-    }
+    );
+    portalOrRoot.pendingChildren = newChildSet;
+    // Schedule an update on the container to swap out the container.
+    markUpdate(workInProgress);
+    finalizeContainerChildren(container, newChildSet);
   }
+}
 }
 
 function updateHostComponent(
@@ -915,7 +928,7 @@ function completeDehydratedActivityBoundary(
       if (!wasHydrated) {
         throw new Error(
           'A dehydrated suspense component was completed without a hydrated node. ' +
-            'This is probably a bug in React.',
+          'This is probably a bug in React.',
         );
       }
       prepareToHydrateHostActivityInstance(workInProgress);
@@ -997,7 +1010,7 @@ function completeDehydratedSuspenseBoundary(
       if (!wasHydrated) {
         throw new Error(
           'A dehydrated suspense component was completed without a hydrated node. ' +
-            'This is probably a bug in React.',
+          'This is probably a bug in React.',
         );
       }
       prepareToHydrateHostSuspenseInstance(workInProgress);
@@ -1308,7 +1321,7 @@ function completeWork(
             if (workInProgress.stateNode === null) {
               throw new Error(
                 'We must have new props for new mounts. This error is likely ' +
-                  'caused by a bug in React. Please file an issue.',
+                'caused by a bug in React. Please file an issue.',
               );
             }
 
@@ -1357,6 +1370,7 @@ function completeWork(
       popHostContext(workInProgress);
       const type = workInProgress.type;
       if (current !== null && workInProgress.stateNode != null) {
+        // 更新 update 阶段 => updateHostComponent
         updateHostComponent(
           current,
           workInProgress,
@@ -1365,11 +1379,12 @@ function completeWork(
           renderLanes,
         );
       } else {
+        // 挂载 mount 阶段
         if (!newProps) {
           if (workInProgress.stateNode === null) {
             throw new Error(
               'We must have new props for new mounts. This error is likely ' +
-                'caused by a bug in React. Please file an issue.',
+              'caused by a bug in React. Please file an issue.',
             );
           }
 
@@ -1405,6 +1420,8 @@ function completeWork(
           }
         } else {
           const rootContainerInstance = getRootHostContainer();
+          // 1. createInstance
+          // 宿主环境 ⇒ hostConfig ⇒ createInstance给completeWork => Fiber 算法和平台无关
           const instance = createInstance(
             type,
             newProps,
@@ -1415,6 +1432,7 @@ function completeWork(
           // TODO: For persistent renderers, we should pass children as part
           // of the initial instance creation
           markCloned(workInProgress);
+          // 2. appendAllChildren
           appendAllChildren(instance, workInProgress, false, false);
           workInProgress.stateNode = instance;
 
@@ -1422,6 +1440,7 @@ function completeWork(
           // (eg DOM renderer supports auto-focus for certain elements).
           // Make sure such renderers get scheduled for later work.
           if (
+            // 3. 最后设置元素属性
             finalizeInitialChildren(
               instance,
               type,
@@ -1465,7 +1484,7 @@ function completeWork(
           if (workInProgress.stateNode === null) {
             throw new Error(
               'We must have new props for new mounts. This error is likely ' +
-                'caused by a bug in React. Please file an issue.',
+              'caused by a bug in React. Please file an issue.',
             );
           }
           // This can happen when we abort work.
@@ -1829,7 +1848,7 @@ function completeWork(
             // time we have to render. So rendering one more row would likely
             // exceed it.
             now() * 2 - renderState.renderingStartTime >
-              getRenderTargetTime() &&
+            getRenderTargetTime() &&
             renderLanes !== OffscreenLane
           ) {
             // We have now passed our CPU deadline and we'll just give up further
@@ -2074,8 +2093,8 @@ function completeWork(
 
   throw new Error(
     `Unknown unit of work tag (${workInProgress.tag}). This error is likely caused by a bug in ` +
-      'React. Please file an issue.',
+    'React. Please file an issue.',
   );
 }
 
-export {completeWork};
+export { completeWork };

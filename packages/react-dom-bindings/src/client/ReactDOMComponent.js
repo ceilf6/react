@@ -7,18 +7,18 @@
  * @flow
  */
 
-import type {HostContext, HostContextDev} from './ReactFiberConfigDOM';
+import type { HostContext, HostContextDev } from './ReactFiberConfigDOM';
 
-import {HostContextNamespaceNone} from './ReactFiberConfigDOM';
+import { HostContextNamespaceNone } from './ReactFiberConfigDOM';
 
 import {
   registrationNameDependencies,
   possibleRegistrationNames,
 } from '../events/EventRegistry';
 
-import {checkHtmlStringCoercion} from 'shared/CheckStringCoercion';
-import {checkAttributeStringCoercion} from 'shared/CheckStringCoercion';
-import {checkControlledValueProps} from '../shared/ReactControlledValuePropTypes';
+import { checkHtmlStringCoercion } from 'shared/CheckStringCoercion';
+import { checkAttributeStringCoercion } from 'shared/CheckStringCoercion';
+import { checkControlledValueProps } from '../shared/ReactControlledValuePropTypes';
 
 import {
   getValueForAttribute,
@@ -34,7 +34,7 @@ import {
   updateInput,
   restoreControlledInputState,
 } from './ReactDOMInput';
-import {validateOptionProps} from './ReactDOMOption';
+import { validateOptionProps } from './ReactDOMOption';
 import {
   validateSelectProps,
   initSelect,
@@ -47,25 +47,25 @@ import {
   updateTextarea,
   restoreControlledTextareaState,
 } from './ReactDOMTextarea';
-import {setSrcObject} from './ReactDOMSrcObject';
-import {validateTextNesting} from './validateDOMNesting';
+import { setSrcObject } from './ReactDOMSrcObject';
+import { validateTextNesting } from './validateDOMNesting';
 import setTextContent from './setTextContent';
 import {
   createDangerousStringForStyles,
   setValueForStyles,
 } from './CSSPropertyOperations';
-import {SVG_NAMESPACE, MATH_NAMESPACE} from './DOMNamespaces';
+import { SVG_NAMESPACE, MATH_NAMESPACE } from './DOMNamespaces';
 import isCustomElement from '../shared/isCustomElement';
 import getAttributeAlias from '../shared/getAttributeAlias';
 import possibleStandardNames from '../shared/possibleStandardNames';
-import {validateProperties as validateARIAProperties} from '../shared/ReactDOMInvalidARIAHook';
-import {validateProperties as validateInputProperties} from '../shared/ReactDOMNullInputValuePropHook';
-import {validateProperties as validateUnknownProperties} from '../shared/ReactDOMUnknownPropertyHook';
+import { validateProperties as validateARIAProperties } from '../shared/ReactDOMInvalidARIAHook';
+import { validateProperties as validateInputProperties } from '../shared/ReactDOMNullInputValuePropHook';
+import { validateProperties as validateUnknownProperties } from '../shared/ReactDOMUnknownPropertyHook';
 import sanitizeURL from '../shared/sanitizeURL';
 
 import noop from 'shared/noop';
 
-import {trackHostMutation} from 'react-reconciler/src/ReactFiberMutationTracking';
+import { trackHostMutation } from 'react-reconciler/src/ReactFiberMutationTracking';
 
 import {
   enableHydrationChangeEvent,
@@ -85,7 +85,7 @@ let didWarnFormActionType = false;
 let didWarnFormActionName = false;
 let didWarnFormActionTarget = false;
 let didWarnFormActionMethod = false;
-let didWarnForNewBooleanPropsWithEmptyValue: {[string]: boolean};
+let didWarnForNewBooleanPropsWithEmptyValue: { [string]: boolean };
 let didWarnPopoverTargetObject = false;
 if (__DEV__) {
   didWarnForNewBooleanPropsWithEmptyValue = {};
@@ -106,9 +106,9 @@ function validatePropertiesInDevelopment(type: string, props: any) {
     ) {
       console.error(
         'A component is `contentEditable` and contains `children` managed by ' +
-          'React. It is now your responsibility to guarantee that none of ' +
-          'those nodes are unexpectedly modified or duplicated. This is ' +
-          'probably not intentional.',
+        'React. It is now your responsibility to guarantee that none of ' +
+        'those nodes are unexpectedly modified or duplicated. This is ' +
+        'probably not intentional.',
       );
     }
   }
@@ -137,15 +137,15 @@ function validateFormActionInDevelopment(
           didWarnFormActionMethod = true;
           console.error(
             'Cannot specify a encType or method for a form that specifies a ' +
-              'function as the action. React provides those automatically. ' +
-              'They will get overridden.',
+            'function as the action. React provides those automatically. ' +
+            'They will get overridden.',
           );
         }
         if (props.target != null && !didWarnFormActionTarget) {
           didWarnFormActionTarget = true;
           console.error(
             'Cannot specify a target for a form that specifies a function as the action. ' +
-              'The function will always be executed in the same window.',
+            'The function will always be executed in the same window.',
           );
         }
       }
@@ -180,7 +180,7 @@ function validateFormActionInDevelopment(
           didWarnFormActionName = true;
           console.error(
             'Cannot specify a "name" prop for a button that specifies a function as a formAction. ' +
-              'React needs it to encode which action should be invoked. It will get overridden.',
+            'React needs it to encode which action should be invoked. It will get overridden.',
           );
         }
         if (
@@ -190,14 +190,14 @@ function validateFormActionInDevelopment(
           didWarnFormActionMethod = true;
           console.error(
             'Cannot specify a formEncType or formMethod for a button that specifies a ' +
-              'function as a formAction. React provides those automatically. They will get overridden.',
+            'function as a formAction. React provides those automatically. They will get overridden.',
           );
         }
         if (props.formTarget != null && !didWarnFormActionTarget) {
           didWarnFormActionTarget = true;
           console.error(
             'Cannot specify a formTarget for a button that specifies a function as a formAction. ' +
-              'The function will always be executed in the same window.',
+            'The function will always be executed in the same window.',
           );
         }
       }
@@ -217,7 +217,7 @@ function warnForPropDifference(
   propName: string,
   serverValue: mixed,
   clientValue: mixed,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   if (__DEV__) {
     if (serverValue === clientValue) {
@@ -263,7 +263,7 @@ function isExpectedViewTransitionName(htmlElement: HTMLElement): boolean {
 function warnForExtraAttributes(
   domElement: Element,
   attributeNames: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ) {
   if (__DEV__) {
     attributeNames.forEach(function (attributeName) {
@@ -298,8 +298,8 @@ function warnForInvalidEventListener(registrationName: string, listener: any) {
     if (listener === false) {
       console.error(
         'Expected `%s` listener to be a function, instead got `false`.\n\n' +
-          'If you used to conditionally omit it with %s={condition && value}, ' +
-          'pass %s={condition ? value : undefined} instead.',
+        'If you used to conditionally omit it with %s={condition && value}, ' +
+        'pass %s={condition ? value : undefined} instead.',
         registrationName,
         registrationName,
         registrationName,
@@ -324,10 +324,10 @@ function normalizeHTML(parent: Element, html: string) {
     // See the discussion in https://github.com/facebook/react/pull/11157.
     const testElement =
       parent.namespaceURI === MATH_NAMESPACE ||
-      parent.namespaceURI === SVG_NAMESPACE
+        parent.namespaceURI === SVG_NAMESPACE
         ? parent.ownerDocument.createElementNS(
-            (parent.namespaceURI: any),
-            parent.tagName,
+          (parent.namespaceURI: any),
+      parent.tagName,
           )
         : parent.ownerDocument.createElement(parent.tagName);
     testElement.innerHTML = html;
@@ -468,7 +468,7 @@ function setProp(
               if (tag === 'source') {
                 console.error(
                   'Passing Blob, MediaSource or MediaStream to <source src> is not supported. ' +
-                    'Pass it directly to <img src>, <video src> or <audio src> instead.',
+                  'Pass it directly to <img src>, <video src> or <audio src> instead.',
                 );
               } else {
                 console.error(
@@ -476,7 +476,7 @@ function setProp(
                   tag,
                 );
               }
-            } catch (x) {}
+            } catch (x) { }
           }
         }
       }
@@ -492,17 +492,17 @@ function setProp(
           if (key === 'src') {
             console.error(
               'An empty string ("") was passed to the %s attribute. ' +
-                'This may cause the browser to download the whole page again over the network. ' +
-                'To fix this, either do not render the element at all ' +
-                'or pass null to %s instead of an empty string.',
+              'This may cause the browser to download the whole page again over the network. ' +
+              'To fix this, either do not render the element at all ' +
+              'or pass null to %s instead of an empty string.',
               key,
               key,
             );
           } else {
             console.error(
               'An empty string ("") was passed to the %s attribute. ' +
-                'To fix this, either do not render the element at all ' +
-                'or pass null to %s instead of an empty string.',
+              'To fix this, either do not render the element at all ' +
+              'or pass null to %s instead of an empty string.',
               key,
               key,
             );
@@ -547,11 +547,11 @@ function setProp(
           key,
           // eslint-disable-next-line no-script-url
           "javascript:throw new Error('" +
-            'A React form was unexpectedly submitted. If you called form.submit() manually, ' +
-            "consider using form.requestSubmit() instead. If you\\'re trying to use " +
-            'event.stopPropagation() in a submit event handler, consider also calling ' +
-            'event.preventDefault().' +
-            "')",
+          'A React form was unexpectedly submitted. If you called form.submit() manually, ' +
+          "consider using form.requestSubmit() instead. If you\\'re trying to use " +
+          'event.stopPropagation() in a submit event handler, consider also calling ' +
+          'event.preventDefault().' +
+          "')",
         );
         break;
       } else if (typeof prevValue === 'function') {
@@ -639,8 +639,8 @@ function setProp(
         if (typeof value !== 'object' || !('__html' in value)) {
           throw new Error(
             '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
-              'Please visit https://react.dev/link/dangerously-set-inner-html ' +
-              'for more information.',
+            'Please visit https://react.dev/link/dangerously-set-inner-html ' +
+            'for more information.',
           );
         }
         const nextHtml: any = value.__html;
@@ -729,7 +729,7 @@ function setProp(
         }
         domElement.setAttribute(
           key,
-          enableTrustedTypesIntegration ? (value: any) : '' + (value: any),
+          enableTrustedTypesIntegration ? (value: any): '' + (value: any),
         );
       } else {
         domElement.removeAttribute(key);
@@ -743,9 +743,9 @@ function setProp(
           didWarnForNewBooleanPropsWithEmptyValue[key] = true;
           console.error(
             'Received an empty string for a boolean attribute `%s`. ' +
-              'This will treat the attribute as if it were false. ' +
-              'Either pass `false` to silence this warning, or ' +
-              'pass `true` if you used an empty string in earlier versions of React to indicate this attribute is true.',
+            'This will treat the attribute as if it were false. ' +
+            'Either pass `false` to silence this warning, or ' +
+            'pass `true` if you used an empty string in earlier versions of React to indicate this attribute is true.',
             key,
           );
         }
@@ -999,8 +999,8 @@ function setPropOnCustomElement(
         if (typeof value !== 'object' || !('__html' in value)) {
           throw new Error(
             '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
-              'Please visit https://react.dev/link/dangerously-set-inner-html ' +
-              'for more information.',
+            'Please visit https://react.dev/link/dangerously-set-inner-html ' +
+            'for more information.',
           );
         }
         const nextHtml: any = value.__html;
@@ -1097,6 +1097,7 @@ export function setInitialProperties(
 
   // TODO: Make sure that we check isMounted before firing any of these events.
 
+  // 特殊标签属性处理
   switch (tag) {
     case 'div':
     case 'span':
@@ -1139,7 +1140,7 @@ export function setInitialProperties(
             // TODO: Can we make this a DEV warning to avoid this deny list?
             throw new Error(
               `${tag} is a void element tag and must neither have \`children\` nor ` +
-                'use `dangerouslySetInnerHTML`.',
+              'use `dangerouslySetInnerHTML`.',
             );
           }
           // defaultChecked and defaultValue are ignored by setProp
@@ -1208,7 +1209,7 @@ export function setInitialProperties(
             if (propValue != null) {
               throw new Error(
                 `${tag} is a void element tag and must neither have \`children\` nor ` +
-                  'use `dangerouslySetInnerHTML`.',
+                'use `dangerouslySetInnerHTML`.',
               );
             }
             break;
@@ -1426,7 +1427,7 @@ export function setInitialProperties(
             // TODO: Can we make this a DEV warning to avoid this deny list?
             throw new Error(
               `${tag} is a void element tag and must neither have \`children\` nor ` +
-                'use `dangerouslySetInnerHTML`.',
+              'use `dangerouslySetInnerHTML`.',
             );
           }
           // defaultChecked and defaultValue are ignored by setProp
@@ -1581,7 +1582,7 @@ export function updateProperties(
               if (nextProp != null) {
                 throw new Error(
                   `${tag} is a void element tag and must neither have \`children\` nor ` +
-                    'use `dangerouslySetInnerHTML`.',
+                  'use `dangerouslySetInnerHTML`.',
                 );
               }
               break;
@@ -1618,10 +1619,10 @@ export function updateProperties(
         ) {
           console.error(
             'A component is changing an uncontrolled input to be controlled. ' +
-              'This is likely caused by the value changing from undefined to ' +
-              'a defined value, which should not happen. ' +
-              'Decide between using a controlled or uncontrolled input ' +
-              'element for the lifetime of the component. More info: https://react.dev/link/controlled-components',
+            'This is likely caused by the value changing from undefined to ' +
+            'a defined value, which should not happen. ' +
+            'Decide between using a controlled or uncontrolled input ' +
+            'element for the lifetime of the component. More info: https://react.dev/link/controlled-components',
           );
           didWarnUncontrolledToControlled = true;
         }
@@ -1632,10 +1633,10 @@ export function updateProperties(
         ) {
           console.error(
             'A component is changing a controlled input to be uncontrolled. ' +
-              'This is likely caused by the value changing from a defined to ' +
-              'undefined, which should not happen. ' +
-              'Decide between using a controlled or uncontrolled input ' +
-              'element for the lifetime of the component. More info: https://react.dev/link/controlled-components',
+            'This is likely caused by the value changing from a defined to ' +
+            'undefined, which should not happen. ' +
+            'Decide between using a controlled or uncontrolled input ' +
+            'element for the lifetime of the component. More info: https://react.dev/link/controlled-components',
           );
           didWarnControlledToUncontrolled = true;
         }
@@ -1901,7 +1902,7 @@ export function updateProperties(
                 // TODO: Can we make this a DEV warning to avoid this deny list?
                 throw new Error(
                   `${tag} is a void element tag and must neither have \`children\` nor ` +
-                    'use `dangerouslySetInnerHTML`.',
+                  'use `dangerouslySetInnerHTML`.',
                 );
               }
               break;
@@ -2004,7 +2005,7 @@ function getPropNameFromAttributeName(attrName: string): string {
 }
 
 export function getPropsFromElement(domElement: Element): Object {
-  const serverDifferences: {[propName: string]: mixed} = {};
+  const serverDifferences: { [propName: string]: mixed } = {};
   const attributes = domElement.attributes;
   for (let i = 0; i < attributes.length; i++) {
     const attr = attributes[i];
@@ -2019,7 +2020,7 @@ export function getPropsFromElement(domElement: Element): Object {
 function getStylesObjectFromElement(domElement: Element): {
   [styleName: string]: string,
 } {
-  const serverValueInObjectForm: {[prop: string]: string} = {};
+  const serverValueInObjectForm: { [prop: string]: string } = {};
   const htmlElement: HTMLElement = (domElement: any);
   const style = htmlElement.style;
   for (let i = 0; i < style.length; i++) {
@@ -2042,14 +2043,14 @@ function getStylesObjectFromElement(domElement: Element): {
 function diffHydratedStyles(
   domElement: Element,
   value: mixed,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   if (value != null && typeof value !== 'object') {
     if (__DEV__) {
       console.error(
         'The `style` prop expects a mapping from style properties to values, ' +
-          "not a string. For example, style={{marginRight: spacing + 'em'}} when " +
-          'using JSX.',
+        "not a string. For example, style={{marginRight: spacing + 'em'}} when " +
+        'using JSX.',
       );
     }
     return;
@@ -2093,7 +2094,7 @@ function hydrateAttribute(
   attributeName: string,
   value: any,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   extraAttributes.delete(attributeName);
   const serverValue = domElement.getAttribute(attributeName);
@@ -2135,7 +2136,7 @@ function hydrateBooleanAttribute(
   attributeName: string,
   value: any,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   extraAttributes.delete(attributeName);
   const serverValue = domElement.getAttribute(attributeName);
@@ -2172,7 +2173,7 @@ function hydrateOverloadedBooleanAttribute(
   attributeName: string,
   value: any,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   extraAttributes.delete(attributeName);
   const serverValue = domElement.getAttribute(attributeName);
@@ -2221,7 +2222,7 @@ function hydrateBooleanishAttribute(
   attributeName: string,
   value: any,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   extraAttributes.delete(attributeName);
   const serverValue = domElement.getAttribute(attributeName);
@@ -2261,7 +2262,7 @@ function hydrateNumericAttribute(
   attributeName: string,
   value: any,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   extraAttributes.delete(attributeName);
   const serverValue = domElement.getAttribute(attributeName);
@@ -2312,7 +2313,7 @@ function hydratePositiveNumericAttribute(
   attributeName: string,
   value: any,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   extraAttributes.delete(attributeName);
   const serverValue = domElement.getAttribute(attributeName);
@@ -2363,7 +2364,7 @@ function hydrateSanitizedAttribute(
   attributeName: string,
   value: any,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   extraAttributes.delete(attributeName);
   const serverValue = domElement.getAttribute(attributeName);
@@ -2404,7 +2405,7 @@ function hydrateSrcObjectAttribute(
   domElement: Element,
   value: Blob,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ): void {
   const attributeName = 'src';
   extraAttributes.delete(attributeName);
@@ -2439,7 +2440,7 @@ function diffHydratedCustomComponent(
   props: Object,
   hostContext: HostContext,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ) {
   for (const propKey in props) {
     if (!props.hasOwnProperty(propKey)) {
@@ -2572,7 +2573,7 @@ function diffHydratedGenericElement(
   props: Object,
   hostContext: HostContext,
   extraAttributes: Set<string>,
-  serverDifferences: {[propName: string]: mixed},
+  serverDifferences: { [propName: string]: mixed },
 ) {
   for (const propKey in props) {
     if (!props.hasOwnProperty(propKey)) {
@@ -2704,7 +2705,7 @@ function diffHydratedGenericElement(
                 if (tag === 'source') {
                   console.error(
                     'Passing Blob, MediaSource or MediaStream to <source src> is not supported. ' +
-                      'Pass it directly to <img src>, <video src> or <audio src> instead.',
+                    'Pass it directly to <img src>, <video src> or <audio src> instead.',
                   );
                 } else {
                   console.error(
@@ -2712,7 +2713,7 @@ function diffHydratedGenericElement(
                     tag,
                   );
                 }
-              } catch (x) {}
+              } catch (x) { }
             }
           }
         }
@@ -2729,17 +2730,17 @@ function diffHydratedGenericElement(
             if (propKey === 'src') {
               console.error(
                 'An empty string ("") was passed to the %s attribute. ' +
-                  'This may cause the browser to download the whole page again over the network. ' +
-                  'To fix this, either do not render the element at all ' +
-                  'or pass null to %s instead of an empty string.',
+                'This may cause the browser to download the whole page again over the network. ' +
+                'To fix this, either do not render the element at all ' +
+                'or pass null to %s instead of an empty string.',
                 propKey,
                 propKey,
               );
             } else {
               console.error(
                 'An empty string ("") was passed to the %s attribute. ' +
-                  'To fix this, either do not render the element at all ' +
-                  'or pass null to %s instead of an empty string.',
+                'To fix this, either do not render the element at all ' +
+                'or pass null to %s instead of an empty string.',
                 propKey,
                 propKey,
               );
@@ -3035,9 +3036,9 @@ function diffHydratedGenericElement(
             didWarnForNewBooleanPropsWithEmptyValue[propKey] = true;
             console.error(
               'Received an empty string for a boolean attribute `%s`. ' +
-                'This will treat the attribute as if it were false. ' +
-                'Either pass `false` to silence this warning, or ' +
-                'pass `true` if you used an empty string in earlier versions of React to indicate this attribute is true.',
+              'This will treat the attribute as if it were false. ' +
+              'Either pass `false` to silence this warning, or ' +
+              'pass `true` if you used an empty string in earlier versions of React to indicate this attribute is true.',
               propKey,
             );
           }
@@ -3268,7 +3269,7 @@ export function diffHydratedProperties(
   props: Object,
   hostContext: HostContext,
 ): null | Object {
-  const serverDifferences: {[propName: string]: mixed} = {};
+  const serverDifferences: { [propName: string]: mixed } = {};
   if (__DEV__) {
     const extraAttributes: Set<string> = new Set();
     const attributes = domElement.attributes;
