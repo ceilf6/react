@@ -7,7 +7,7 @@
  * @flow
  */
 
-import type {ReactElement} from 'shared/ReactElementType';
+import type { ReactElement } from 'shared/ReactElementType';
 import type {
   ReactPortal,
   Thenable,
@@ -18,9 +18,9 @@ import type {
   ReactKey,
   ReactOptimisticKey,
 } from 'shared/ReactTypes';
-import type {Fiber} from './ReactInternalTypes';
-import type {Lanes} from './ReactFiberLane';
-import type {ThenableState} from './ReactFiberThenable';
+import type { Fiber } from './ReactInternalTypes';
+import type { Lanes } from './ReactFiberLane';
+import type { ThenableState } from './ReactFiberThenable';
 
 import getComponentNameFromFiber from 'react-reconciler/src/getComponentNameFromFiber';
 import {
@@ -29,7 +29,7 @@ import {
   Forked,
   PlacementDEV,
 } from './ReactFiberFlags';
-import {NoMode, ConcurrentMode} from './ReactTypeOfMode';
+import { NoMode, ConcurrentMode } from './ReactTypeOfMode';
 import {
   getIteratorFn,
   ASYNC_ITERATOR,
@@ -65,9 +65,9 @@ import {
   createFiberFromPortal,
   createFiberFromThrow,
 } from './ReactFiber';
-import {isCompatibleFamilyForHotReloading} from './ReactFiberHotReloading';
-import {getIsHydrating} from './ReactFiberHydrationContext';
-import {pushTreeFork} from './ReactFiberTreeContext';
+import { isCompatibleFamilyForHotReloading } from './ReactFiberHotReloading';
+import { getIsHydrating } from './ReactFiberHydrationContext';
+import { pushTreeFork } from './ReactFiberTreeContext';
 import {
   SuspenseException,
   SuspenseActionException,
@@ -75,9 +75,9 @@ import {
   trackUsedThenable,
   resolveLazy,
 } from './ReactFiberThenable';
-import {readContextDuringReconciliation} from './ReactFiberNewContext';
+import { readContextDuringReconciliation } from './ReactFiberNewContext';
 
-import {runWithFiberInDEV} from './ReactCurrentFiber';
+import { runWithFiberInDEV } from './ReactCurrentFiber';
 
 // This tracks the thenables that are unwrapped during reconcilation.
 let thenableState: ThenableState | null = null;
@@ -134,7 +134,7 @@ let warnForMissingKey = (
   returnFiber: Fiber,
   workInProgress: Fiber,
   child: mixed,
-) => {};
+) => { };
 
 if (__DEV__) {
   didWarnAboutMaps = false;
@@ -145,9 +145,9 @@ if (__DEV__) {
    * object keys are not valid. This allows us to keep track of children between
    * updates.
    */
-  ownerHasKeyUseWarning = ({}: {[string]: boolean});
-  ownerHasFunctionTypeWarning = ({}: {[string]: boolean});
-  ownerHasSymbolTypeWarning = ({}: {[string]: boolean});
+  ownerHasKeyUseWarning = ({}: { [string]: boolean });
+  ownerHasFunctionTypeWarning = ({}: { [string]: boolean });
+  ownerHasSymbolTypeWarning = ({}: { [string]: boolean });
 
   warnForMissingKey = (
     returnFiber: Fiber,
@@ -168,7 +168,7 @@ if (__DEV__) {
     if (typeof child._store !== 'object') {
       throw new Error(
         'React Component in warnForMissingKey should have a _store. ' +
-          'This error is likely caused by a bug in React. Please file an issue.',
+        'This error is likely caused by a bug in React. Please file an issue.',
       );
     }
 
@@ -220,7 +220,7 @@ if (__DEV__) {
     runWithFiberInDEV(workInProgress, () => {
       console.error(
         'Each child in a list should have a unique "key" prop.' +
-          '%s%s See https://react.dev/link/warning-keys for more information.',
+        '%s%s See https://react.dev/link/warning-keys for more information.',
         currentComponentErrorInfo,
         childOwnerAppendix,
       );
@@ -260,13 +260,13 @@ function validateFragmentProps(
             if (enableFragmentRefs) {
               console.error(
                 'Invalid prop `%s` supplied to `React.Fragment`. ' +
-                  'React.Fragment can only have `key`, `ref`, and `children` props.',
+                'React.Fragment can only have `key`, `ref`, and `children` props.',
                 erroredKey,
               );
             } else {
               console.error(
                 'Invalid prop `%s` supplied to `React.Fragment`. ' +
-                  'React.Fragment can only have `key` and `children` props.',
+                'React.Fragment can only have `key` and `children` props.',
                 erroredKey,
               );
             }
@@ -302,10 +302,10 @@ function throwOnInvalidObjectTypeImpl(returnFiber: Fiber, newChild: Object) {
   if (newChild.$$typeof === REACT_LEGACY_ELEMENT_TYPE) {
     throw new Error(
       'A React Element from an older version of React was rendered. ' +
-        'This is not supported. It can happen if:\n' +
-        '- Multiple copies of the "react" package is used.\n' +
-        '- A library pre-bundled an old copy of "react" or "react/jsx-runtime".\n' +
-        '- A compiler tries to "inline" JSX instead of using the runtime.',
+      'This is not supported. It can happen if:\n' +
+      '- Multiple copies of the "react" package is used.\n' +
+      '- A library pre-bundled an old copy of "react" or "react/jsx-runtime".\n' +
+      '- A compiler tries to "inline" JSX instead of using the runtime.',
     );
   }
 
@@ -313,13 +313,12 @@ function throwOnInvalidObjectTypeImpl(returnFiber: Fiber, newChild: Object) {
   const childString = Object.prototype.toString.call(newChild);
 
   throw new Error(
-    `Objects are not valid as a React child (found: ${
-      childString === '[object Object]'
-        ? 'object with keys {' + Object.keys(newChild).join(', ') + '}'
-        : childString
+    `Objects are not valid as a React child (found: ${childString === '[object Object]'
+      ? 'object with keys {' + Object.keys(newChild).join(', ') + '}'
+      : childString
     }). ` +
-      'If you meant to render a collection of children, use an array ' +
-      'instead.',
+    'If you meant to render a collection of children, use an array ' +
+    'instead.',
   );
 }
 
@@ -348,9 +347,9 @@ function warnOnFunctionTypeImpl(returnFiber: Fiber, invalidChild: Function) {
     if (returnFiber.tag === HostRoot) {
       console.error(
         'Functions are not valid as a React child. This may happen if ' +
-          'you return %s instead of <%s /> from render. ' +
-          'Or maybe you meant to call this function rather than return it.\n' +
-          '  root.render(%s)',
+        'you return %s instead of <%s /> from render. ' +
+        'Or maybe you meant to call this function rather than return it.\n' +
+        '  root.render(%s)',
         name,
         name,
         name,
@@ -358,9 +357,9 @@ function warnOnFunctionTypeImpl(returnFiber: Fiber, invalidChild: Function) {
     } else {
       console.error(
         'Functions are not valid as a React child. This may happen if ' +
-          'you return %s instead of <%s /> from render. ' +
-          'Or maybe you meant to call this function rather than return it.\n' +
-          '  <%s>{%s}</%s>',
+        'you return %s instead of <%s /> from render. ' +
+        'Or maybe you meant to call this function rather than return it.\n' +
+        '  <%s>{%s}</%s>',
         name,
         name,
         parentName,
@@ -428,6 +427,12 @@ type ChildReconciler = (
 // to be able to optimize each path individually by branching early. This needs
 // a compiler or we can do it manually. Helpers that don't need this branching
 // live outside of this function.
+// reconcileChildFibers 和 mountChildFibers 都是来自此方法
+/**
+ * 
+ * @param {*} shouldTrackSideEffects boolean 表示是否追踪副作用、做flags标记
+ * @returns 
+ */
 function createChildReconciler(
   shouldTrackSideEffects: boolean,
 ): ChildReconciler {
@@ -515,6 +520,7 @@ function createChildReconciler(
   ): number {
     newFiber.index = newIndex;
     if (!shouldTrackSideEffects) {
+      // 说明是初始化，不需要标记 Placement - 插入或移动操作
       // During hydration, the useId algorithm needs to know which fibers are
       // part of a list of children (arrays, iterators).
       newFiber.flags |= Forked;
@@ -1144,10 +1150,10 @@ function createChildReconciler(
           runWithFiberInDEV(workInProgress, () => {
             console.error(
               'Encountered two children with the same key, `%s`. ' +
-                'Keys should be unique so that components maintain their identity ' +
-                'across updates. Non-unique keys may cause children to be ' +
-                'duplicated and/or omitted — the behavior is unsupported and ' +
-                'could change in a future version.',
+              'Keys should be unique so that components maintain their identity ' +
+              'across updates. Non-unique keys may cause children to be ' +
+              'duplicated and/or omitted — the behavior is unsupported and ' +
+              'could change in a future version.',
               key,
             );
           });
@@ -1377,7 +1383,7 @@ function createChildReconciler(
     if (typeof iteratorFn !== 'function') {
       throw new Error(
         'An object is not an iterable. This error is likely caused by a bug in ' +
-          'React. Please file an issue.',
+        'React. Please file an issue.',
       );
     }
 
@@ -1394,17 +1400,17 @@ function createChildReconciler(
           returnFiber.tag === FunctionComponent &&
           // $FlowFixMe[method-unbinding]
           Object.prototype.toString.call(returnFiber.type) ===
-            '[object GeneratorFunction]' &&
+          '[object GeneratorFunction]' &&
           // $FlowFixMe[method-unbinding]
           Object.prototype.toString.call(newChildren) === '[object Generator]';
         if (!isGeneratorComponent) {
           if (!didWarnAboutGenerators) {
             console.error(
               'Using Iterators as children is unsupported and will likely yield ' +
-                'unexpected results because enumerating a generator mutates it. ' +
-                'You may convert it to an array with `Array.from()` or the ' +
-                '`[...spread]` operator before rendering. You can also use an ' +
-                'Iterable that can iterate multiple times over the same items.',
+              'unexpected results because enumerating a generator mutates it. ' +
+              'You may convert it to an array with `Array.from()` or the ' +
+              '`[...spread]` operator before rendering. You can also use an ' +
+              'Iterable that can iterate multiple times over the same items.',
             );
           }
           didWarnAboutGenerators = true;
@@ -1414,7 +1420,7 @@ function createChildReconciler(
         if (!didWarnAboutMaps) {
           console.error(
             'Using Maps as children is not supported. ' +
-              'Use an array of keyed ReactElements instead.',
+            'Use an array of keyed ReactElements instead.',
           );
           didWarnAboutMaps = true;
         }
@@ -1447,17 +1453,17 @@ function createChildReconciler(
           returnFiber.tag === FunctionComponent &&
           // $FlowFixMe[method-unbinding]
           Object.prototype.toString.call(returnFiber.type) ===
-            '[object AsyncGeneratorFunction]' &&
+          '[object AsyncGeneratorFunction]' &&
           // $FlowFixMe[method-unbinding]
           Object.prototype.toString.call(newChildren) ===
-            '[object AsyncGenerator]';
+          '[object AsyncGenerator]';
         if (!isGeneratorComponent) {
           if (!didWarnAboutGenerators) {
             console.error(
               'Using AsyncIterators as children is unsupported and will likely yield ' +
-                'unexpected results because enumerating a generator mutates it. ' +
-                'You can use an AsyncIterable that can iterate multiple times over ' +
-                'the same items.',
+              'unexpected results because enumerating a generator mutates it. ' +
+              'You can use an AsyncIterable that can iterate multiple times over ' +
+              'the same items.',
             );
           }
           didWarnAboutGenerators = true;
@@ -2101,6 +2107,9 @@ function createChildReconciler(
   return reconcileChildFibers;
 }
 
+// ChildReconciler 接受参数 shouldTrackSideEffects 布尔值表示是否追踪副作用、做flags标记
+// mount 阶段无需追踪、不做 flags 标记
+// update 阶段需要追踪、做 flags 标记
 export const reconcileChildFibers: ChildReconciler =
   createChildReconciler(true);
 export const mountChildFibers: ChildReconciler = createChildReconciler(false);
@@ -2166,10 +2175,10 @@ function validateSuspenseListNestedChild(childSlot: mixed, index: number) {
           : 'iterable';
       console.error(
         'A nested %s was passed to row #%s in <SuspenseList />. Wrap it in ' +
-          'an additional SuspenseList to configure its revealOrder: ' +
-          '<SuspenseList revealOrder=...> ... ' +
-          '<SuspenseList revealOrder=...>{%s}</SuspenseList> ... ' +
-          '</SuspenseList>',
+        'an additional SuspenseList to configure its revealOrder: ' +
+        '<SuspenseList revealOrder=...> ... ' +
+        '<SuspenseList revealOrder=...>{%s}</SuspenseList> ... ' +
+        '</SuspenseList>',
         type,
         index,
         type,
@@ -2230,19 +2239,19 @@ export function validateSuspenseListChildren(
             '[object GeneratorFunction]' ||
             // $FlowFixMe
             Object.prototype.toString.call(children.type) ===
-              '[object AsyncGeneratorFunction]')
+            '[object AsyncGeneratorFunction]')
         ) {
           console.error(
             'A generator Component was passed to a <SuspenseList revealOrder="%s" />. ' +
-              'This is not supported as a way to generate lists. Instead, pass an ' +
-              'iterable as the children.',
+            'This is not supported as a way to generate lists. Instead, pass an ' +
+            'iterable as the children.',
             revealOrder,
           );
         } else {
           console.error(
             'A single row was passed to a <SuspenseList revealOrder="%s" />. ' +
-              'This is not useful since it needs multiple rows. ' +
-              'Did you mean to pass multiple children or an array?',
+            'This is not useful since it needs multiple rows. ' +
+            'Did you mean to pass multiple children or an array?',
             revealOrder,
           );
         }

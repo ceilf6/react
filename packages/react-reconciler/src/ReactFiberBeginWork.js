@@ -21,16 +21,16 @@ import type {
   CacheProps,
   ProfilerProps,
 } from 'shared/ReactTypes';
-import type {LazyComponent as LazyComponentType} from 'react/src/ReactLazy';
-import type {Fiber, FiberRoot} from './ReactInternalTypes';
-import type {TypeOfMode} from './ReactTypeOfMode';
-import type {Lanes, Lane} from './ReactFiberLane';
-import type {ActivityState} from './ReactFiberActivityComponent';
+import type { LazyComponent as LazyComponentType } from 'react/src/ReactLazy';
+import type { Fiber, FiberRoot } from './ReactInternalTypes';
+import type { TypeOfMode } from './ReactTypeOfMode';
+import type { Lanes, Lane } from './ReactFiberLane';
+import type { ActivityState } from './ReactFiberActivityComponent';
 import type {
   SuspenseState,
   SuspenseListRenderState,
 } from './ReactFiberSuspenseComponent';
-import type {SuspenseContext} from './ReactFiberSuspenseContext';
+import type { SuspenseContext } from './ReactFiberSuspenseContext';
 import type {
   LegacyHiddenProps,
   OffscreenProps,
@@ -43,10 +43,10 @@ import type {
   CacheComponentState,
   SpawnedCachePool,
 } from './ReactFiberCacheComponent';
-import type {UpdateQueue} from './ReactFiberClassUpdateQueue';
-import type {RootState} from './ReactFiberRoot';
-import type {TracingMarkerInstance} from './ReactFiberTracingMarkerComponent';
-import type {ViewTransitionState} from './ReactFiberViewTransitionComponent';
+import type { UpdateQueue } from './ReactFiberClassUpdateQueue';
+import type { RootState } from './ReactFiberRoot';
+import type { TracingMarkerInstance } from './ReactFiberTracingMarkerComponent';
+import type { ViewTransitionState } from './ReactFiberViewTransitionComponent';
 
 import {
   markComponentRenderStarted,
@@ -130,7 +130,7 @@ import {
   REACT_MEMO_TYPE,
   REACT_CONTEXT_TYPE,
 } from 'shared/ReactSymbols';
-import {setCurrentFiber} from './ReactCurrentFiber';
+import { setCurrentFiber } from './ReactCurrentFiber';
 import {
   resolveFunctionForHotReloading,
   resolveForwardRefForHotReloading,
@@ -183,8 +183,8 @@ import {
   createHoistableInstance,
   HostTransitionContext,
 } from './ReactFiberConfig';
-import type {ActivityInstance, SuspenseInstance} from './ReactFiberConfig';
-import {shouldError, shouldSuspend} from './ReactFiberReconciler';
+import type { ActivityInstance, SuspenseInstance } from './ReactFiberConfig';
+import { shouldError, shouldSuspend } from './ReactFiberReconciler';
 import {
   pushHostContext,
   pushHostContainer,
@@ -208,7 +208,7 @@ import {
   pushHiddenContext,
   reuseHiddenContextOnStack,
 } from './ReactFiberHiddenContext';
-import {findFirstSuspended} from './ReactFiberSuspenseComponent';
+import { findFirstSuspended } from './ReactFiberSuspenseComponent';
 import {
   pushProvider,
   propagateContextChange,
@@ -226,7 +226,7 @@ import {
   replaySuspendedComponentWithHooks,
   renderTransitionAwareHostComponentWithHooks,
 } from './ReactFiberHooks';
-import {stopProfilerTimerIfRunning} from './ReactProfilerTimer';
+import { stopProfilerTimerIfRunning } from './ReactProfilerTimer';
 import {
   getMaskedContext,
   getUnmaskedContext,
@@ -273,13 +273,13 @@ import {
   getWorkInProgressRoot,
   peekDeferredLane,
 } from './ReactFiberWorkLoop';
-import {enqueueConcurrentRenderForLane} from './ReactFiberConcurrentUpdates';
-import {pushCacheProvider, CacheContext} from './ReactFiberCacheComponent';
+import { enqueueConcurrentRenderForLane } from './ReactFiberConcurrentUpdates';
+import { pushCacheProvider, CacheContext } from './ReactFiberCacheComponent';
 import {
   createCapturedValueFromError,
   createCapturedValueAtFiber,
 } from './ReactCapturedValue';
-import {OffscreenVisible} from './ReactFiberOffscreenComponent';
+import { OffscreenVisible } from './ReactFiberOffscreenComponent';
 import {
   createClassErrorUpdate,
   initializeClassErrorUpdate,
@@ -304,15 +304,15 @@ import {
   pushRootMarkerInstance,
   TransitionTracingMarker,
 } from './ReactFiberTracingMarkerComponent';
-import {callComponentInDEV, callRenderInDEV} from './ReactFiberCallUserSpace';
-import {resolveLazy} from './ReactFiberThenable';
+import { callComponentInDEV, callRenderInDEV } from './ReactFiberCallUserSpace';
+import { resolveLazy } from './ReactFiberThenable';
 
 // A special exception that's used to unwind the stack when an update flows
 // into a dehydrated boundary.
 export const SelectiveHydrationException: mixed = new Error(
   "This is not a real error. It's an implementation detail of React's " +
-    "selective hydration feature. If this leaks into userspace, it's a bug in " +
-    'React. Please file an issue.',
+  "selective hydration feature. If this leaks into userspace, it's a bug in " +
+  'React. Please file an issue.',
 );
 
 let didReceiveUpdate: boolean = false;
@@ -327,14 +327,14 @@ let didWarnAboutTailOptions;
 let didWarnAboutClassNameOnViewTransition;
 
 if (__DEV__) {
-  didWarnAboutBadClass = ({}: {[string]: boolean});
-  didWarnAboutContextTypeOnFunctionComponent = ({}: {[string]: boolean});
-  didWarnAboutContextTypes = ({}: {[string]: boolean});
-  didWarnAboutGetDerivedStateOnFunctionComponent = ({}: {[string]: boolean});
+  didWarnAboutBadClass = ({}: { [string]: boolean });
+  didWarnAboutContextTypeOnFunctionComponent = ({}: { [string]: boolean });
+  didWarnAboutContextTypes = ({}: { [string]: boolean });
+  didWarnAboutGetDerivedStateOnFunctionComponent = ({}: { [string]: boolean });
   didWarnAboutReassigningProps = false;
-  didWarnAboutRevealOrder = ({}: {[string]: boolean});
-  didWarnAboutTailOptions = ({}: {[string]: boolean});
-  didWarnAboutClassNameOnViewTransition = ({}: {[string]: boolean});
+  didWarnAboutRevealOrder = ({}: { [string]: boolean });
+  didWarnAboutTailOptions = ({}: { [string]: boolean });
+  didWarnAboutClassNameOnViewTransition = ({}: { [string]: boolean });
 }
 
 export function reconcileChildren(
@@ -420,7 +420,7 @@ function updateForwardRef(
     // `ref` is just a prop now, but `forwardRef` expects it to not appear in
     // the props object. This used to happen in the JSX runtime, but now we do
     // it here.
-    propsWithoutRef = ({}: {[string]: any});
+    propsWithoutRef = ({}: { [string]: any });
     for (const key in nextProps) {
       // Since `ref` should only appear in props via the JSX transform, we can
       // assume that this is a plain object. So we don't need a
@@ -897,8 +897,8 @@ function mountActivityChildren(
     if (hiddenProp !== undefined) {
       console.error(
         '<Activity> doesn\'t accept a hidden prop. Use mode="hidden" instead.\n' +
-          '- <Activity %s>\n' +
-          '+ <Activity %s>',
+        '- <Activity %s>\n' +
+        '+ <Activity %s>',
         hiddenProp === true
           ? 'hidden'
           : hiddenProp === false
@@ -1314,7 +1314,7 @@ function updateTracingMarkerComponent(
       if (current.memoizedProps.name !== nextProps.name) {
         console.error(
           'Changing the name of a tracing marker after mount is not supported. ' +
-            'To remount the tracing marker, pass it a new key.',
+          'To remount the tracing marker, pass it a new key.',
         );
       }
     }
@@ -1436,7 +1436,7 @@ function updateFunctionComponent(
       if (!didWarnAboutBadClass[componentName]) {
         console.error(
           "The <%s /> component appears to have a render method, but doesn't extend React.Component. " +
-            'This is likely to cause errors. Change %s to extend React.Component instead.',
+          'This is likely to cause errors. Change %s to extend React.Component instead.',
           componentName,
           componentName,
         );
@@ -1461,15 +1461,15 @@ function updateFunctionComponent(
           if (disableLegacyContext) {
             console.error(
               '%s uses the legacy contextTypes API which was removed in React 19. ' +
-                'Use React.createContext() with React.useContext() instead. ' +
-                '(https://react.dev/link/legacy-context)',
+              'Use React.createContext() with React.useContext() instead. ' +
+              '(https://react.dev/link/legacy-context)',
               componentName,
             );
           } else {
             console.error(
               '%s uses the legacy contextTypes API which will be removed soon. ' +
-                'Use React.createContext() with React.useContext() instead. ' +
-                '(https://react.dev/link/legacy-context)',
+              'Use React.createContext() with React.useContext() instead. ' +
+              '(https://react.dev/link/legacy-context)',
               componentName,
             );
           }
@@ -1675,7 +1675,7 @@ function updateClassComponent(
       if (!didWarnAboutReassigningProps) {
         console.error(
           'It looks like %s is reassigning its own `this.props` while rendering. ' +
-            'This is not supported and can lead to confusing bugs.',
+          'This is not supported and can lead to confusing bugs.',
           getComponentNameFromFiber(workInProgress) || 'a component',
         );
       }
@@ -1862,10 +1862,10 @@ function updateHostRoot(
         renderLanes,
       );
     } else if (nextChildren !== prevChildren) {
-      const recoverableError = createCapturedValueAtFiber<mixed>(
+      const recoverableError = createCapturedValueAtFiber < mixed > (
         new Error(
           'This root received an early update, before anything was able ' +
-            'hydrate. Switched the entire root to client rendering.',
+          'hydrate. Switched the entire root to client rendering.',
         ),
         workInProgress,
       );
@@ -2166,7 +2166,7 @@ function mountLazyComponent(
   // implementation detail.
   throw new Error(
     `Element type is invalid. Received a promise that resolves to: ${loggedComponent}. ` +
-      `Lazy element type must resolve to a class or function.${hint}`,
+    `Lazy element type must resolve to a class or function.${hint}`,
   );
 }
 
@@ -2214,7 +2214,7 @@ function validateFunctionComponentInDev(workInProgress: Fiber, Component: any) {
     if (Component && Component.childContextTypes) {
       console.error(
         'childContextTypes cannot be defined on a function component.\n' +
-          '  %s.childContextTypes = ...',
+        '  %s.childContextTypes = ...',
         Component.displayName || Component.name || 'Component',
       );
     }
@@ -2965,10 +2965,10 @@ function updateDehydratedSuspenseComponent(
       let stack = null;
       let componentStack = null;
       if (__DEV__) {
-        ({digest, message, stack, componentStack} =
+        ({ digest, message, stack, componentStack } =
           getSuspenseInstanceFallbackErrorDetails(suspenseInstance));
       } else {
-        ({digest} = getSuspenseInstanceFallbackErrorDetails(suspenseInstance));
+        ({ digest } = getSuspenseInstanceFallbackErrorDetails(suspenseInstance));
       }
 
       let error: Error;
@@ -2978,8 +2978,8 @@ function updateDehydratedSuspenseComponent(
       } else {
         error = new Error(
           'The server could not finish this Suspense boundary, likely ' +
-            'due to an error during server rendering. ' +
-            'Switched to client rendering.',
+          'due to an error during server rendering. ' +
+          'Switched to client rendering.',
         );
       }
       // Replace the stack with the server stack
@@ -3257,7 +3257,7 @@ function validateRevealOrder(revealOrder: SuspenseListRevealOrder) {
           case 'independent': {
             console.error(
               '"%s" is not a valid value for revealOrder on <SuspenseList />. ' +
-                'Use lowercase "%s" instead.',
+              'Use lowercase "%s" instead.',
               revealOrder,
               revealOrder.toLowerCase(),
             );
@@ -3267,7 +3267,7 @@ function validateRevealOrder(revealOrder: SuspenseListRevealOrder) {
           case 'backward': {
             console.error(
               '"%s" is not a valid value for revealOrder on <SuspenseList />. ' +
-                'React uses the -s suffix in the spelling. Use "%ss" instead.',
+              'React uses the -s suffix in the spelling. Use "%ss" instead.',
               revealOrder,
               revealOrder.toLowerCase(),
             );
@@ -3276,7 +3276,7 @@ function validateRevealOrder(revealOrder: SuspenseListRevealOrder) {
           default:
             console.error(
               '"%s" is not a supported revealOrder on <SuspenseList />. ' +
-                'Did you mean "independent", "together", "forwards" or "backwards"?',
+              'Did you mean "independent", "together", "forwards" or "backwards"?',
               revealOrder,
             );
             break;
@@ -3284,7 +3284,7 @@ function validateRevealOrder(revealOrder: SuspenseListRevealOrder) {
       } else {
         console.error(
           '%s is not a supported value for revealOrder on <SuspenseList />. ' +
-            'Did you mean "independent", "together", "forwards" or "backwards"?',
+          'Did you mean "independent", "together", "forwards" or "backwards"?',
           revealOrder,
         );
       }
@@ -3309,7 +3309,7 @@ function validateTailOptions(
         didWarnAboutTailOptions[cacheKey] = true;
         console.error(
           '"%s" is not a supported value for tail on <SuspenseList />. ' +
-            'Did you mean "visible", "collapsed" or "hidden"?',
+          'Did you mean "visible", "collapsed" or "hidden"?',
           tailMode,
         );
       } else if (
@@ -3321,8 +3321,8 @@ function validateTailOptions(
         didWarnAboutTailOptions[cacheKey] = true;
         console.error(
           '<SuspenseList tail="%s" /> is only valid if revealOrder is ' +
-            '"forwards" (default) or "backwards". ' +
-            'Did you mean to specify revealOrder="forwards"?',
+          '"forwards" (default) or "backwards". ' +
+          'Did you mean to specify revealOrder="forwards"?',
           tailMode,
         );
       }
@@ -3606,8 +3606,8 @@ function updateViewTransition(
         didWarnAboutClassNameOnViewTransition[example] = true;
         console.error(
           '<ViewTransition> doesn\'t accept a "className" prop. It has been renamed to "default".\n' +
-            '-   <ViewTransition className=%s>\n' +
-            '+   <ViewTransition default=%s>',
+          '-   <ViewTransition className=%s>\n' +
+          '+   <ViewTransition default=%s>',
           example,
           example,
         );
@@ -3693,9 +3693,9 @@ function updateContextConsumer(
     if (typeof render !== 'function') {
       console.error(
         'A context consumer was rendered with multiple children, or a child ' +
-          "that isn't a function. A context consumer expects a single child " +
-          'that is a function. If you did pass a function, make sure there ' +
-          'is no trailing or leading whitespace around it.',
+        "that isn't a function. A context consumer expects a single child " +
+        'that is a function. If you did pass a function, make sure there ' +
+        'is no trailing or leading whitespace around it.',
       );
     }
   }
@@ -3866,7 +3866,7 @@ function remountFiber(
   } else {
     throw new Error(
       'Did not expect this call in production. ' +
-        'This is a bug in React. Please file an issue.',
+      'This is a bug in React. Please file an issue.',
     );
   }
 }
@@ -4144,6 +4144,13 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
   return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
 }
 
+/**
+ * 
+ * @param {*} current current FiberNode
+ * @param {*} workInProgress 后缓存区 WIP FiberNode
+ * @param {*} renderLanes 优先级
+ * @returns 
+ */
 function beginWork(
   current: Fiber | null,
   workInProgress: Fiber,
@@ -4166,10 +4173,11 @@ function beginWork(
     }
   }
 
-  if (current !== null) {
+  if (current !== null) { // 即不是首次渲染，而是更新
     const oldProps = current.memoizedProps;
     const newProps = workInProgress.pendingProps;
 
+    // 判断能否复用
     if (
       oldProps !== newProps ||
       hasLegacyContextChanged() ||
@@ -4194,6 +4202,7 @@ function beginWork(
       ) {
         // No pending updates or context. Bail out now.
         didReceiveUpdate = false;
+        // 如果可以复用，就直接返回了，无需下面的 wip.tag 分流处理
         return attemptEarlyBailoutIfNoScheduledUpdate(
           current,
           workInProgress,
@@ -4212,7 +4221,7 @@ function beginWork(
         didReceiveUpdate = false;
       }
     }
-  } else {
+  } else { // 首次渲染
     didReceiveUpdate = false;
 
     if (getIsHydrating() && isForkedChild(workInProgress)) {
@@ -4238,6 +4247,8 @@ function beginWork(
   // move this assignment out of the common path and into each branch.
   workInProgress.lanes = NoLanes;
 
+  // 根据不同的 tag 进入不同的处理逻辑
+  // 枚举从 ReactWorkTags 导入
   switch (workInProgress.tag) {
     case LazyComponent: {
       const elementType = workInProgress.elementType;
@@ -4249,6 +4260,8 @@ function beginWork(
       );
     }
     case FunctionComponent: {
+      // 函数组件
+      // mount 时候打标记，update 的时候用
       const Component = workInProgress.type;
       return updateFunctionComponent(
         current,
@@ -4258,7 +4271,7 @@ function beginWork(
         renderLanes,
       );
     }
-    case ClassComponent: {
+    case ClassComponent: { // 类组件
       const Component = workInProgress.type;
       const unresolvedProps = workInProgress.pendingProps;
       const resolvedProps = resolveClassComponentProps(
@@ -4285,9 +4298,9 @@ function beginWork(
         return updateHostSingleton(current, workInProgress, renderLanes);
       }
     // Fall through
-    case HostComponent:
+    case HostComponent: // 原生组件 div, span ...
       return updateHostComponent(current, workInProgress, renderLanes);
-    case HostText:
+    case HostText: // 文本元素
       return updateHostText(current, workInProgress);
     case SuspenseComponent:
       return updateSuspenseComponent(current, workInProgress, renderLanes);
@@ -4424,8 +4437,8 @@ function beginWork(
 
   throw new Error(
     `Unknown unit of work tag (${workInProgress.tag}). This error is likely caused by a bug in ` +
-      'React. Please file an issue.',
+    'React. Please file an issue.',
   );
 }
 
-export {beginWork};
+export { beginWork };
