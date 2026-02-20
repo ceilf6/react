@@ -22,6 +22,7 @@ import {
 } from '../SchedulerFeatureFlags';
 
 import { push, pop, peek } from '../SchedulerMinHeap';
+// 小顶堆算法 => 推入、堆顶、拿取
 
 // TODO: Use symbols?
 import {
@@ -131,16 +132,20 @@ function advanceTimers(currentTime: number) {
   }
 }
 
+/**
+ * 
+ * @param {*} currentTime 当前时间，在 requestHostTimeout 中用 getCurrentTime() 获取的
+ */
 function handleTimeout(currentTime: number) {
   isHostTimeoutScheduled = false;
-  advanceTimers(currentTime);
+  advanceTimers(currentTime); // 遍历 延时任务timerQueue => 到期的放入taskQueue
 
   if (!isHostCallbackScheduled) {
-    if (peek(taskQueue) !== null) {
+    if (peek(taskQueue) !== null) { // 拿取普通任务 => requestHostCallback调度
       isHostCallbackScheduled = true;
       requestHostCallback();
     } else {
-      const firstTimer = peek(timerQueue);
+      const firstTimer = peek(timerQueue); // 拿取延时任务 => requestHostTimeout调度
       if (firstTimer !== null) {
         requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
       }
