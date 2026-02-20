@@ -443,7 +443,8 @@ function unstable_scheduleCallback(
       }
       // Schedule a timeout.
       // 如果是延时任务，调用 requestHostTimeout 进行任务调度
-      requestHostTimeout(handleTimeout, startTime - currentTime);
+      requestHostTimeout(handleTimeout, startTime - currentTime); // 调度延时任务入口
+      // 任务开始时间 - 当前时间, 即 delay
     }
   } else {
     // 普通任务
@@ -640,12 +641,18 @@ function requestHostCallback() {
   }
 }
 
+// 调度延时任务
+/**
+ * 
+ * @param {*} callback scheduleCallback中传入的 handleTimeout 函数
+ * @param {*} ms 延时时间
+ */
 function requestHostTimeout(
   callback: (currentTime: number) => void,
   ms: number,
 ) {
   // $FlowFixMe[not-a-function] nullable value
-  taskTimeoutID = localSetTimeout(() => {
+  taskTimeoutID = localSetTimeout(() => { // localSetTimeout 即宿主环境的原生API setTimeout
     callback(getCurrentTime());
   }, ms);
 }
