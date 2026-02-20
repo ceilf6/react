@@ -7,9 +7,9 @@
  * @flow
  */
 
-import type {Fiber, FiberRoot} from './ReactInternalTypes';
-import type {Transition} from 'react/src/ReactStartTransition';
-import type {ConcurrentUpdate} from './ReactFiberConcurrentUpdates';
+import type { Fiber, FiberRoot } from './ReactInternalTypes';
+import type { Transition } from 'react/src/ReactStartTransition';
+import type { ConcurrentUpdate } from './ReactFiberConcurrentUpdates';
 
 // TODO: Ideally these types would be opaque but that doesn't work well with
 // our reconciler fork infra, since these leak into non-reconciler packages.
@@ -31,15 +31,18 @@ import {
   enableGestureTransition,
   enableParallelTransitions,
 } from 'shared/ReactFeatureFlags';
-import {isDevToolsPresent} from './ReactFiberDevToolsHook';
-import {clz32} from './clz32';
-import {LegacyRoot} from './ReactRootTags';
+import { isDevToolsPresent } from './ReactFiberDevToolsHook';
+import { clz32 } from './clz32';
+import { LegacyRoot } from './ReactRootTags';
 
 // Lane values below should be kept in sync with getLabelForLane(), used by react-devtools-timeline.
 // If those values are changed that package should be rebuilt and redeployed.
 
 export const TotalLanes = 31;
 
+// 位运算
+// => 优先级
+// lanes 是由多个 lane 或运算组合而来
 export const NoLanes: Lanes = /*                        */ 0b0000000000000000000000000000000;
 export const NoLane: Lane = /*                          */ 0b0000000000000000000000000000000;
 
@@ -753,6 +756,8 @@ export function claimNextRetryLane(): Lane {
   return lane;
 }
 
+// 拿到最高优先级的 位运算 lanes & -lanes
+// 例如 0010 0011 ----> getHighestPriorityLane -----> 0000 0001
 export function getHighestPriorityLane(lanes: Lanes): Lane {
   return lanes & -lanes;
 }
@@ -1096,10 +1101,10 @@ export function getBumpedLaneForHydration(
   const bumpedLane =
     (renderLane & SyncUpdateLanes) !== NoLane
       ? // Unify sync lanes. We don't do this inside getBumpedLaneForHydrationByLane
-        // because that causes things to flush synchronously when they shouldn't.
-        // TODO: This is not coherent but that's beacuse the unification is not coherent.
-        // We need to get merge these into an actual single lane.
-        SyncHydrationLane
+      // because that causes things to flush synchronously when they shouldn't.
+      // TODO: This is not coherent but that's beacuse the unification is not coherent.
+      // We need to get merge these into an actual single lane.
+      SyncHydrationLane
       : getBumpedLaneForHydrationByLane(renderLane);
   // Check if the lane we chose is suspended. If so, that indicates that we
   // already attempted and failed to hydrate at that level. Also check if we're

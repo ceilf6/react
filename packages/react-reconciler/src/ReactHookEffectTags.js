@@ -9,6 +9,7 @@
 
 export type HookFlags = number;
 
+// 位运算
 export const NoFlags = /*   */ 0b0000;
 
 // Represents whether effect should fire.

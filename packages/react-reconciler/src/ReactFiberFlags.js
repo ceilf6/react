@@ -14,6 +14,9 @@ import {
 
 export type Flags = number;
 
+// 位运算
+// => 合并变更状态, 例如 workInProgress.flags |= PerformedWork;
+// => 判断, 例如finishedWork.flags & PerformedWork) !== NoFlags
 // Don't change these values. They're used by React Dev Tools.
 export const NoFlags = /*                      */ 0b0000000000000000000000000000000;
 export const PerformedWork = /*                */ 0b0000000000000000000000000000001;
@@ -98,13 +101,13 @@ export const BeforeMutationMask: number =
   Snapshot |
   (enableCreateEventHandleAPI
     ? // createEventHandle needs to visit deleted and hidden trees to
-      // fire beforeblur
-      // TODO: Only need to visit Deletions during BeforeMutation phase if an
-      // element is focused.
-      Update | ChildDeletion | Visibility
+    // fire beforeblur
+    // TODO: Only need to visit Deletions during BeforeMutation phase if an
+    // element is focused.
+    Update | ChildDeletion | Visibility
     : // useEffectEvent uses the snapshot phase,
-      // but we're moving it to the mutation phase.
-      enableEffectEventMutationPhase
+    // but we're moving it to the mutation phase.
+    enableEffectEventMutationPhase
       ? 0
       : Update);
 
