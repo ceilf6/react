@@ -1,3 +1,18 @@
+/*
+下面方法中常见到如下代码、用于收集 有flag标记的 FiberNode
+=> 快速确定 FiberNode 以及子树是否存在副作用 => 判断是否需要执行和副作用相关的操作
+```
+let subtreeFlags = NoFlags;
+// 收集子 FiberNode 的子孙 FiberNode 中标记的 flags
+subtreeFlags |= child.subtreeFlags; // 位运算 - 并 => 收集
+// 收集子 FiberNode 中标记的 flags
+subtreeFlags ｜= child.flags;
+// 将收集到的所有 flags 附加到当前 FiberNode 的 subtreeFlags 上面
+completedWork.subtreeFlags |= subtreeFlags;
+// 注意是 "completed": completedWork 指 FiberNode; completeWork 才是归的方法
+```
+*/
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
