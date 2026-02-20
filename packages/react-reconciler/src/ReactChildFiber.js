@@ -553,6 +553,7 @@ function createChildReconciler(
     return newFiber;
   }
 
+  // 单节点diff
   function updateTextNode(
     returnFiber: Fiber,
     current: Fiber | null,
@@ -581,6 +582,7 @@ function createChildReconciler(
     }
   }
 
+  // 单节点diff
   function updateElement(
     returnFiber: Fiber,
     current: Fiber | null,
@@ -673,6 +675,7 @@ function createChildReconciler(
     }
   }
 
+  // 单节点diff
   function updateFragment(
     returnFiber: Fiber,
     current: Fiber | null,
@@ -842,6 +845,7 @@ function createChildReconciler(
     return null;
   }
 
+  // 判断 key、type 是否相同
   function updateSlot(
     returnFiber: Fiber,
     oldFiber: Fiber | null,
@@ -1175,12 +1179,16 @@ function createChildReconciler(
     return knownKeys;
   }
 
+  // 多节点 diff 处理
   function reconcileChildrenArray(
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
     newChildren: Array<any>,
     lanes: Lanes,
   ): Fiber | null {
+    // 为什么不用双端对比算法:
+    // FiberNode 没有反向指针，无法通过双端搜索进行优化
+
     // This algorithm can't optimize by searching from both ends since we
     // don't have backpointers on fibers. I'm trying to see how far we can get
     // with that model. If it ends up not being worth the tradeoffs, we can
@@ -1210,12 +1218,14 @@ function createChildReconciler(
     let newIdx = 0;
     let nextOldFiber = null;
     for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
+      // 第一轮遍历 - 顺序乐观处理
       if (oldFiber.index > newIdx) {
         nextOldFiber = oldFiber;
         oldFiber = null;
       } else {
         nextOldFiber = oldFiber.sibling;
       }
+      // updateSlot 判断 key、type 是否相同
       const newFiber = updateSlot(
         returnFiber,
         oldFiber,
@@ -1264,6 +1274,7 @@ function createChildReconciler(
       oldFiber = nextOldFiber;
     }
 
+    // 新的结束，说明新的比旧的短，删除剩余 old
     if (newIdx === newChildren.length) {
       // We've reached the end of the new children. We can delete the rest.
       deleteRemainingChildren(returnFiber, oldFiber);
@@ -1274,6 +1285,7 @@ function createChildReconciler(
       return resultingFirstChild;
     }
 
+    // 旧的结束，旧的比新的短，剩下的全部插入
     if (oldFiber === null) {
       // If we don't have any more existing children we can choose a fast path
       // since the rest will all be insertions.
@@ -1311,6 +1323,10 @@ function createChildReconciler(
 
     // Keep scanning and use the map to restore deleted items as moves.
     for (; newIdx < newChildren.length; newIdx++) {
+      // 第二轮遍历 - 处理乱序
+      // 通过 Map + key 匹配
+      // updateFromMap 即类似第一次遍历的 updateSlot 判断 key、type 是否相同
+      // 先用 key 从 Map 里找 oldFiber, 再调用 updateElement
       const newFiber = updateFromMap(
         existingChildren,
         returnFiber,
@@ -1356,6 +1372,7 @@ function createChildReconciler(
       }
     }
 
+    // map 结构中还有剩余的 Fiber 节点，就将这些 Fiber 节点添加到 deletions 数组里面，之后统一做删除操作
     if (shouldTrackSideEffects) {
       // Any existing children that weren't consumed above were deleted. We need
       // to add them to the deletion list.
