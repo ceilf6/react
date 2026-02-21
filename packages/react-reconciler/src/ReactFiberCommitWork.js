@@ -18,31 +18,31 @@ import type {
   Props,
   SuspendedState,
 } from './ReactFiberConfig';
-import type {Fiber, FiberRoot} from './ReactInternalTypes';
-import type {Lanes} from './ReactFiberLane';
+import type { Fiber, FiberRoot } from './ReactInternalTypes';
+import type { Lanes } from './ReactFiberLane';
 import {
   includesLoadingIndicatorLanes,
   includesOnlySuspenseyCommitEligibleLanes,
   includesOnlyViewTransitionEligibleLanes,
 } from './ReactFiberLane';
-import type {ActivityState} from './ReactFiberActivityComponent';
-import type {SuspenseState, RetryQueue} from './ReactFiberSuspenseComponent';
-import type {UpdateQueue} from './ReactFiberClassUpdateQueue';
-import type {FunctionComponentUpdateQueue} from './ReactFiberHooks';
-import type {Wakeable, ViewTransitionProps} from 'shared/ReactTypes';
+import type { ActivityState } from './ReactFiberActivityComponent';
+import type { SuspenseState, RetryQueue } from './ReactFiberSuspenseComponent';
+import type { UpdateQueue } from './ReactFiberClassUpdateQueue';
+import type { FunctionComponentUpdateQueue } from './ReactFiberHooks';
+import type { Wakeable, ViewTransitionProps } from 'shared/ReactTypes';
 import type {
   OffscreenState,
   OffscreenInstance,
   OffscreenQueue,
 } from './ReactFiberOffscreenComponent';
-import type {Cache} from './ReactFiberCacheComponent';
-import type {RootState} from './ReactFiberRoot';
-import type {Transition} from 'react/src/ReactStartTransition';
+import type { Cache } from './ReactFiberCacheComponent';
+import type { RootState } from './ReactFiberRoot';
+import type { Transition } from 'react/src/ReactStartTransition';
 import type {
   TracingMarkerInstance,
   TransitionAbort,
 } from './ReactFiberTracingMarkerComponent';
-import type {ViewTransitionState} from './ReactFiberViewTransitionComponent';
+import type { ViewTransitionState } from './ReactFiberViewTransitionComponent';
 
 import {
   alwaysThrottleRetries,
@@ -151,8 +151,8 @@ import {
   pushDeepEquality,
   popDeepEquality,
 } from './ReactFiberPerformanceTrack';
-import {ConcurrentMode, NoMode, ProfileMode} from './ReactTypeOfMode';
-import {deferHiddenCallbacks} from './ReactFiberClassUpdateQueue';
+import { ConcurrentMode, NoMode, ProfileMode } from './ReactTypeOfMode';
+import { deferHiddenCallbacks } from './ReactFiberClassUpdateQueue';
 import {
   supportsMutation,
   supportsPersistence,
@@ -205,10 +205,10 @@ import {
   Insertion as HookInsertion,
   Passive as HookPassive,
 } from './ReactHookEffectTags';
-import {doesFiberContain} from './ReactFiberTreeReflection';
-import {isDevToolsPresent, onCommitUnmount} from './ReactFiberDevToolsHook';
-import {releaseCache, retainCache} from './ReactFiberCacheComponent';
-import {clearTransitionsForLanes} from './ReactFiberLane';
+import { doesFiberContain } from './ReactFiberTreeReflection';
+import { isDevToolsPresent, onCommitUnmount } from './ReactFiberDevToolsHook';
+import { releaseCache, retainCache } from './ReactFiberCacheComponent';
+import { clearTransitionsForLanes } from './ReactFiberLane';
 import {
   OffscreenVisible,
   OffscreenPassiveEffectsConnected,
@@ -217,7 +217,7 @@ import {
   TransitionRoot,
   TransitionTracingMarker,
 } from './ReactFiberTracingMarkerComponent';
-import {getViewTransitionClassName} from './ReactFiberViewTransitionComponent';
+import { getViewTransitionClassName } from './ReactFiberViewTransitionComponent';
 import {
   commitHookLayoutEffects,
   commitHookLayoutUnmountEffects,
@@ -287,8 +287,8 @@ import {
   trackNamedViewTransition,
   untrackNamedViewTransition,
 } from './ReactFiberDuplicateViewTransitions';
-import {markIndicatorHandled} from './ReactFiberRootScheduler';
-import type {Flags} from './ReactFiberFlags';
+import { markIndicatorHandled } from './ReactFiberRootScheduler';
+import type { Flags } from './ReactFiberFlags';
 
 // Used during the commit phase to track the state of the Offscreen component stack.
 // Allows us to avoid traversing the return path to find the nearest Offscreen ancestor.
@@ -335,16 +335,19 @@ function isHydratingParent(current: Fiber, finishedWork: Fiber): boolean {
   } else if (finishedWork.tag === HostRoot) {
     return (
       (current.memoizedState: RootState).isDehydrated &&
-      (finishedWork.flags & ForceClientRender) === NoFlags
+        (finishedWork.flags & ForceClientRender) === NoFlags
     );
   } else {
     return false;
   }
 }
 
+// BeforeMutation子阶段 的入口函数
+// 主要就是将 finishedWork -> firstChild -> nextEffect
+// 然后 => commitBeforeMutationEffects_begin
 export function commitBeforeMutationEffects(
   root: FiberRoot,
-  firstChild: Fiber,
+  firstChild: Fiber, // finishedWork
   committedLanes: Lanes,
 ): void {
   focusedInstanceHandle = prepareForCommit(root.containerInfo);
@@ -354,6 +357,7 @@ export function commitBeforeMutationEffects(
     enableViewTransition &&
     includesOnlyViewTransitionEligibleLanes(committedLanes);
 
+  // 全局变量
   nextEffect = firstChild;
   commitBeforeMutationEffects_begin(isViewTransitionEligible);
 
@@ -363,12 +367,16 @@ export function commitBeforeMutationEffects(
   resetAppearingViewTransitions();
 }
 
+// 向下遍历
+// 无法遍历时调用 _complete
 function commitBeforeMutationEffects_begin(isViewTransitionEligible: boolean) {
   // If this commit is eligible for a View Transition we look into all mutated subtrees.
   // TODO: We could optimize this by marking these with the Snapshot subtree flag in the render phase.
   const subtreeMask = isViewTransitionEligible
     ? BeforeAndAfterMutationTransitionMask
     : BeforeMutationMask;
+
+  // 向下遍历
   while (nextEffect !== null) {
     const fiber = nextEffect;
 
@@ -441,6 +449,7 @@ function commitBeforeMutationEffects_begin(isViewTransitionEligible: boolean) {
     const child = fiber.child;
     if ((fiber.subtreeFlags & subtreeMask) !== NoFlags && child !== null) {
       child.return = fiber;
+      // 向下遍历
       nextEffect = child;
     } else {
       if (isViewTransitionEligible) {
@@ -460,15 +469,18 @@ function commitBeforeMutationEffects_complete(
 ) {
   while (nextEffect !== null) {
     const fiber = nextEffect;
+    // 针对 flags 执行具体操作 - 主要工作
     commitBeforeMutationEffectsOnFiber(fiber, isViewTransitionEligible);
 
     const sibling = fiber.sibling;
     if (sibling !== null) {
       sibling.return = fiber.return;
+      // 对兄弟 _begin
       nextEffect = sibling;
       return;
     }
 
+    // 父节点
     nextEffect = fiber.return;
   }
 }
@@ -497,6 +509,7 @@ function commitBeforeMutationEffectsOnFiber(
     }
   }
 
+  // 根据标记执行操作
   switch (finishedWork.tag) {
     case FunctionComponent:
     case ForwardRef:
@@ -507,7 +520,7 @@ function commitBeforeMutationEffectsOnFiber(
         const eventPayloads = updateQueue !== null ? updateQueue.events : null;
         if (eventPayloads !== null) {
           for (let ii = 0; ii < eventPayloads.length; ii++) {
-            const {ref, nextImpl} = eventPayloads[ii];
+            const { ref, nextImpl } = eventPayloads[ii];
             ref.impl = nextImpl;
           }
         }
@@ -515,6 +528,7 @@ function commitBeforeMutationEffectsOnFiber(
       break;
     }
     case ClassComponent: {
+      // Snapshot 表示 ClassComponent 存在更新
       if ((flags & Snapshot) !== NoFlags) {
         if (current !== null) {
           commitClassSnapshot(finishedWork, current);
@@ -526,6 +540,7 @@ function commitBeforeMutationEffectsOnFiber(
       if ((flags & Snapshot) !== NoFlags) {
         if (supportsMutation) {
           const root = finishedWork.stateNode;
+          // 清空 HostRoot 挂载的内容，方便 Mutation 阶段渲染
           clearContainer(root.containerInfo);
         }
       }
@@ -563,7 +578,7 @@ function commitBeforeMutationEffectsOnFiber(
       if ((flags & Snapshot) !== NoFlags) {
         throw new Error(
           'This unit of work tag should not have side-effects. This error is ' +
-            'likely caused by a bug in React. Please file an issue.',
+          'likely caused by a bug in React. Please file an issue.',
         );
       }
     }
@@ -930,24 +945,24 @@ function abortRootTransitions(
         const transitionInstance: TracingMarkerInstance = (rootTransitions.get(
           transition,
         ): any);
-        if (transitionInstance.aborts === null) {
-          transitionInstance.aborts = [];
-        }
-        transitionInstance.aborts.push(abort);
+    if (transitionInstance.aborts === null) {
+      transitionInstance.aborts = [];
+    }
+    transitionInstance.aborts.push(abort);
 
-        if (deletedOffscreenInstance !== null) {
-          if (
-            transitionInstance.pendingBoundaries !== null &&
-            transitionInstance.pendingBoundaries.has(deletedOffscreenInstance)
-          ) {
-            // $FlowFixMe[incompatible-use] found when upgrading Flow
-            transitionInstance.pendingBoundaries.delete(
-              deletedOffscreenInstance,
-            );
-          }
-        }
+    if (deletedOffscreenInstance !== null) {
+      if (
+        transitionInstance.pendingBoundaries !== null &&
+        transitionInstance.pendingBoundaries.has(deletedOffscreenInstance)
+      ) {
+        // $FlowFixMe[incompatible-use] found when upgrading Flow
+        transitionInstance.pendingBoundaries.delete(
+          deletedOffscreenInstance,
+        );
       }
-    });
+    }
+  }
+});
   }
 }
 
@@ -1360,6 +1375,7 @@ function detachFiberAfterEffects(fiber: Fiber) {
 let hostParent: Instance | Container | null = null;
 let hostParentIsContainer: boolean = false;
 
+// 删除操作
 function commitDeletionEffects(
   root: FiberRoot,
   returnFiber: Fiber,
@@ -1417,7 +1433,7 @@ function commitDeletionEffects(
     if (hostParent === null) {
       throw new Error(
         'Expected to find a host parent. This error is likely caused by ' +
-          'a bug in React. Please file an issue.',
+        'a bug in React. Please file an issue.',
       );
     }
 
@@ -1462,6 +1478,7 @@ function recursivelyTraverseDeletionEffects(
   }
 }
 
+// 删除具体执行
 function commitDeletionEffectsOnFiber(
   finishedRoot: FiberRoot,
   nearestMountedAncestor: Fiber,
@@ -1692,6 +1709,7 @@ function commitDeletionEffectsOnFiber(
       if (!offscreenSubtreeWasHidden) {
         safelyDetachRef(deletedFiber, nearestMountedAncestor);
         const instance = deletedFiber.stateNode;
+        // 执行钩子函数 componentWillUnmount
         if (typeof instance.componentWillUnmount === 'function') {
           safelyCallComponentWillUnmount(
             deletedFiber,
@@ -1928,7 +1946,7 @@ function getRetryCache(finishedWork: Fiber) {
     default: {
       throw new Error(
         `Unexpected Suspense handler tag (${finishedWork.tag}). This is a ` +
-          'bug in React.',
+        'bug in React.',
       );
     }
   }
@@ -1983,6 +2001,8 @@ function isSuspenseBoundaryBeingHidden(
   return false;
 }
 
+// Mutation 阶段入口函数
+// 主要调用 commitMutationEffectsOnFiber
 export function commitMutationEffects(
   root: FiberRoot,
   finishedWork: Fiber,
@@ -1996,12 +2016,16 @@ export function commitMutationEffects(
 
   resetComponentEffectTimers();
 
+  // 旧版是 手动遍历子树 + _begin 函数
+  // 新版是以 以 Fiber 为单位的递归函数 - 每个 Fiber 自己处理自己的 mutation
   commitMutationEffectsOnFiber(finishedWork, root, committedLanes);
 
   inProgressLanes = null;
   inProgressRoot = null;
 }
 
+// 原先在 commitMutationEffects_begin 中的删除逻辑移到了此处
+// 然后在 commitMutationEffectsOnFiber 中调用
 function recursivelyTraverseMutationEffects(
   root: FiberRoot,
   parentFiber: Fiber,
@@ -2009,10 +2033,13 @@ function recursivelyTraverseMutationEffects(
 ) {
   // Deletions effects can be scheduled on any fiber type. They need to happen
   // before the children effects have fired.
+  // 删除的 DOM 必须在其他孩子、兄弟 mutation 前完成
   const deletions = parentFiber.deletions;
   if (deletions !== null) {
     for (let i = 0; i < deletions.length; i++) {
       const childToDelete = deletions[i];
+      // 遍历 deletions 数组进行删除操作
+      // 具体执行方法是 commitDeletionEffects
       commitDeletionEffects(root, parentFiber, childToDelete);
     }
   }
@@ -2028,6 +2055,8 @@ function recursivelyTraverseMutationEffects(
 
 let currentHoistableRoot: HoistableRoot | null = null;
 
+// 1. 删除
+// 
 function commitMutationEffectsOnFiber(
   finishedWork: Fiber,
   root: FiberRoot,
@@ -2060,12 +2089,13 @@ function commitMutationEffectsOnFiber(
             updateQueue !== null ? updateQueue.events : null;
           if (eventPayloads !== null) {
             for (let ii = 0; ii < eventPayloads.length; ii++) {
-              const {ref, nextImpl} = eventPayloads[ii];
+              const { ref, nextImpl } = eventPayloads[ii];
               ref.impl = nextImpl;
             }
           }
         }
       }
+      // 进行删除操作
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       commitReconciliationEffects(finishedWork, lanes);
 
@@ -2249,7 +2279,7 @@ function commitMutationEffectsOnFiber(
               // FormReset bit for something else.
               console.error(
                 'Unexpected host component type. Expected a form. This is a ' +
-                  'bug in React.',
+                'bug in React.',
               );
             }
           }
@@ -2280,7 +2310,7 @@ function commitMutationEffectsOnFiber(
           if (finishedWork.stateNode === null) {
             throw new Error(
               'This should have a text node initialized. This error is likely ' +
-                'caused by a bug in React. Please file an issue.',
+              'caused by a bug in React. Please file an issue.',
             );
           }
 
@@ -2840,8 +2870,8 @@ function commitAfterMutationEffectsOnFiber(
           for (let i = 0; i < cancelableChildren.length; i += 3) {
             cancelViewTransitionName(
               ((cancelableChildren[i]: any): Instance),
-              ((cancelableChildren[i + 1]: any): string),
-              ((cancelableChildren[i + 2]: any): Props),
+            ((cancelableChildren[i + 1]: any): string),
+            ((cancelableChildren[i + 2]: any): Props),
             );
           }
         }
@@ -3626,12 +3656,12 @@ function commitPassiveMountOnFiber(
         enableComponentPerformanceTrack &&
         (finishedWork.mode & ProfileMode) !== NoMode &&
         ((finishedWork.actualStartTime: any): number) > 0 &&
-        (finishedWork.flags & PerformedWork) !== NoFlags
+          (finishedWork.flags & PerformedWork) !== NoFlags
       ) {
         logComponentRender(
           finishedWork,
           ((finishedWork.actualStartTime: any): number),
-          endTime,
+        endTime,
           inHydratedSubtree,
           committedLanes,
         );
@@ -3667,7 +3697,7 @@ function commitPassiveMountOnFiber(
           logComponentErrored(
             finishedWork,
             ((finishedWork.actualStartTime: any): number),
-            endTime,
+          endTime,
             // TODO: The captured values are all hidden inside the updater/callback closures so
             // we can't get to the errors but they're there so we should be able to log them.
             [],
@@ -3676,7 +3706,7 @@ function commitPassiveMountOnFiber(
           logComponentRender(
             finishedWork,
             ((finishedWork.actualStartTime: any): number),
-            endTime,
+          endTime,
             inHydratedSubtree,
             committedLanes,
           );
@@ -3702,7 +3732,7 @@ function commitPassiveMountOnFiber(
         inHydratedSubtree =
           finishedWork.alternate !== null &&
           (finishedWork.alternate.memoizedState: RootState).isDehydrated &&
-          (finishedWork.flags & ForceClientRender) === NoFlags;
+            (finishedWork.flags & ForceClientRender) === NoFlags;
       }
 
       recursivelyTraversePassiveMountEffects(
@@ -4267,12 +4297,12 @@ export function reconnectPassiveEffects(
     includeWorkInProgressEffects &&
     (finishedWork.mode & ProfileMode) !== NoMode &&
     ((finishedWork.actualStartTime: any): number) > 0 &&
-    (finishedWork.flags & PerformedWork) !== NoFlags
+      (finishedWork.flags & PerformedWork) !== NoFlags
   ) {
     logComponentRender(
       finishedWork,
       ((finishedWork.actualStartTime: any): number),
-      endTime,
+    endTime,
       inHydratedSubtree,
       committedLanes,
     );
@@ -4526,12 +4556,12 @@ function commitAtomicPassiveEffects(
     enableComponentPerformanceTrack &&
     (finishedWork.mode & ProfileMode) !== NoMode &&
     ((finishedWork.actualStartTime: any): number) > 0 &&
-    (finishedWork.flags & PerformedWork) !== NoFlags
+      (finishedWork.flags & PerformedWork) !== NoFlags
   ) {
     logComponentRender(
       finishedWork,
       ((finishedWork.actualStartTime: any): number),
-      endTime,
+    endTime,
       inHydratedSubtree,
       committedLanes,
     );
