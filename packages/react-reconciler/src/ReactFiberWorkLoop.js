@@ -4024,6 +4024,7 @@ function flushMutationEffects(): void {
   // the mutation phase, so that the previous tree is still current during
   // componentWillUnmount, but before the layout phase, so that the finished
   // work is current during componentDidMount/Update.
+  // FiberTree 的切换 - 双缓存
   root.current = finishedWork;
   pendingEffectsStatus = PENDING_LAYOUT_PHASE;
 }

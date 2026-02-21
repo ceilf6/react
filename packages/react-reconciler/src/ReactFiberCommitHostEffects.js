@@ -16,7 +16,7 @@ import type {
   ChildSet,
   FragmentInstanceType,
 } from './ReactFiberConfig';
-import type {Fiber, FiberRoot} from './ReactInternalTypes';
+import type { Fiber, FiberRoot } from './ReactInternalTypes';
 
 import {
   HostRoot,
@@ -28,7 +28,7 @@ import {
   DehydratedFragment,
   Fragment,
 } from './ReactWorkTags';
-import {ContentReset, Placement} from './ReactFiberFlags';
+import { ContentReset, Placement } from './ReactFiberFlags';
 import {
   supportsMutation,
   supportsResources,
@@ -60,10 +60,10 @@ import {
   commitNewChildToFragmentInstance,
   deleteChildFromFragmentInstance,
 } from './ReactFiberConfig';
-import {captureCommitPhaseError} from './ReactFiberWorkLoop';
-import {trackHostMutation} from './ReactFiberMutationTracking';
+import { captureCommitPhaseError } from './ReactFiberWorkLoop';
+import { trackHostMutation } from './ReactFiberMutationTracking';
 
-import {runWithFiberInDEV} from './ReactCurrentFiber';
+import { runWithFiberInDEV } from './ReactCurrentFiber';
 import {
   enableFragmentRefs,
   enableFragmentRefsTextNodes,
@@ -387,7 +387,7 @@ function insertOrAppendPlacementNodeIntoContainer(
   parent: Container,
   parentFragmentInstances: null | Array<FragmentInstanceType>,
 ): void {
-  const {tag} = node;
+  const { tag } = node;
   const isHost = tag === HostComponent || tag === HostText;
   if (isHost) {
     const stateNode = node.stateNode;
@@ -445,7 +445,7 @@ function insertOrAppendPlacementNode(
   parent: Instance,
   parentFragmentInstances: null | Array<FragmentInstanceType>,
 ): void {
-  const {tag} = node;
+  const { tag } = node;
   const isHost = tag === HostComponent || tag === HostText;
   if (isHost) {
     const stateNode = node.stateNode;
@@ -525,7 +525,7 @@ function commitPlacement(finishedWork: Fiber): void {
   if (hostParentFiber == null) {
     throw new Error(
       'Expected to find a host parent. This error is likely caused by a bug ' +
-        'in React. Please file an issue.',
+      'in React. Please file an issue.',
     );
   }
 
@@ -581,7 +581,7 @@ function commitPlacement(finishedWork: Fiber): void {
     default:
       throw new Error(
         'Invalid host parent fiber. This error is likely caused by a bug ' +
-          'in React. Please file an issue.',
+        'in React. Please file an issue.',
       );
   }
 }
@@ -621,6 +621,7 @@ function commitImmutablePlacementNodeToFragmentInstances(
   }
 }
 
+// 负责插入、移动，调用 commitPlacement
 export function commitHostPlacement(finishedWork: Fiber) {
   try {
     if (__DEV__) {

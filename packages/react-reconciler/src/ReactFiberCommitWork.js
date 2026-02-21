@@ -638,6 +638,7 @@ function commitLayoutEffectOnFiber(
         committedLanes,
       );
       if (flags & Update) {
+        // 执行钩子函数
         commitClassLayoutLifecycles(finishedWork, current);
       }
 
@@ -2055,8 +2056,7 @@ function recursivelyTraverseMutationEffects(
 
 let currentHoistableRoot: HoistableRoot | null = null;
 
-// 1. 删除
-// 
+// 1. 调用删除
 function commitMutationEffectsOnFiber(
   finishedWork: Fiber,
   root: FiberRoot,
@@ -2766,6 +2766,8 @@ function commitMutationEffectsOnFiber(
   popComponentEffectDidSpawnUpdate(prevEffectDidSpawnUpdate);
 }
 
+// 插入、移动
+// 调用 commitHostPlacement
 function commitReconciliationEffects(
   finishedWork: Fiber,
   committedLanes: Lanes,
@@ -2984,6 +2986,8 @@ function commitAfterMutationEffectsOnFiber(
   }
 }
 
+// 旧版commitLayoutEffectsOnFiber
+// 负责执行类组件生命周期钩子函数、useLayoutEffect...
 export function commitLayoutEffects(
   finishedWork: Fiber,
   root: FiberRoot,
