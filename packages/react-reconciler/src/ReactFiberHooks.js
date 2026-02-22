@@ -1272,18 +1272,23 @@ function useMemoCache(size: number): Array<mixed> {
   return data;
 }
 
+// useState 使用的 内置基础版reducer
 function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S {
   // $FlowFixMe[incompatible-use]: Flow doesn't like mixed types
   return typeof action === 'function' ? action(state) : action;
 }
 
+// useReducer 的 mount 阶段
 function mountReducer<S, I, A>(
   reducer: (S, A) => S,
   initialArg: I,
   init?: I => S,
 ): [S, Dispatch<A>] {
+  // 创建 hook 对象
   const hook = mountWorkInProgressHook();
   let initialState;
+  // 如果有 init 初始化函数，就执行该函数
+  // 将执行的结果给 initialState
   if (init !== undefined) {
     initialState = init(initialArg);
     if (shouldDoubleInvokeUserFnsInHooksDEV) {
@@ -1297,12 +1302,15 @@ function mountReducer<S, I, A>(
   } else {
     initialState = ((initialArg: any): S);
   }
+  // 后面和 useState 的 mountState 大致相同
   hook.memoizedState = hook.baseState = initialState;
   const queue: UpdateQueue<S, A> = {
     pending: null,
     lanes: NoLanes,
     dispatch: null,
     lastRenderedReducer: reducer,
+    // 不同于 mountState 的 mountStateImpl 中用的 basicStateReducer
+    // mountReducer 中 hook.queue 中用的是 用户传入的reducer
     lastRenderedState: (initialState: any),
   };
   hook.queue = queue;
@@ -1314,6 +1322,7 @@ function mountReducer<S, I, A>(
   return [hook.memoizedState, dispatch];
 }
 
+// useReducer 的 update 阶段
 function updateReducer<S, I, A>(
   reducer: (S, A) => S,
   initialArg: I,
@@ -1328,6 +1337,7 @@ function updateReducerImpl<S, A>(
   current: Hook,
   reducer: (S, A) => S,
 ): [S, Dispatch<A>] {
+  // 拿到对应的更新队列
   const queue = hook.queue;
 
   if (queue === null) {
@@ -1338,6 +1348,8 @@ function updateReducerImpl<S, A>(
   }
 
   queue.lastRenderedReducer = reducer;
+
+  // 根据 update 链表计算新的 state 的逻辑，进行批量修改
 
   // The last rebase update that is NOT part of the base state.
   let baseQueue = hook.baseQueue;
@@ -1921,6 +1933,7 @@ function mountStateImpl<S>(initialState: (() => S) | S): Hook {
   if (typeof initialState === 'function') {
     const initialStateInitializer = initialState;
     // $FlowFixMe[incompatible-use]: Flow doesn't like mixed types
+    // 如果是函数，会执行拿到初始值
     initialState = initialStateInitializer();
     if (shouldDoubleInvokeUserFnsInHooksDEV) {
       setIsStrictModeForDevtools(true);
@@ -1945,6 +1958,7 @@ function mountStateImpl<S>(initialState: (() => S) | S): Hook {
   return hook;
 }
 
+// useState 的 mount 阶段
 function mountState<S>(
   initialState: (() => S) | S,
 ): [S, Dispatch<BasicStateAction<S>>] {
@@ -1962,8 +1976,11 @@ function mountState<S>(
   queue.dispatch = dispatch;
   return [hook.memoizedState, dispatch];
   // [ 当前状态, dispatch函数-状态变更函数 ]
+  // 例如 const [state,setState] = useState(() => 666) 拿到的 .memoizedState 就是 666, dispatch 就是能修改 state 的钥匙
 }
 
+// useState 的 update 阶段
+// 眼都不演了 - 直接调用 updateReducer
 function updateState<S>(
   initialState: (() => S) | S,
 ): [S, Dispatch<BasicStateAction<S>>] {
