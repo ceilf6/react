@@ -41,11 +41,13 @@ import { LegacyRoot } from './ReactRootTags';
 export const TotalLanes = 31;
 
 // 位运算
-// => 优先级
+// => 优先级 
 // lanes 是由多个 lane 或运算组合而来
 export const NoLanes: Lanes = /*                        */ 0b0000000000000000000000000000000;
 export const NoLane: Lane = /*                          */ 0b0000000000000000000000000000000;
 
+// 值越小，优先级越高
+// 届时 lanes & -lanes 可以拿到最低位的，即最高优先级的
 export const SyncHydrationLane: Lane = /*               */ 0b0000000000000000000000000000001;
 export const SyncLane: Lane = /*                        */ 0b0000000000000000000000000000010;
 export const SyncLaneIndex: number = 1;
@@ -1072,7 +1074,7 @@ export function upgradePendingLanesToSync(
   while (lanes) {
     const index = pickArbitraryLaneIndex(lanes);
     const lane = 1 << index;
-    root.entanglements[SyncLaneIndex] |= lane;
+    root.entanglements[SyncLaneIndex] |= lane; // 纳入批
     lanes &= ~lane;
   }
 }

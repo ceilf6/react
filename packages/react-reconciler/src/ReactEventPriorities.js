@@ -7,7 +7,7 @@
  * @flow
  */
 
-import type {Lane, Lanes} from './ReactFiberLane';
+import type { Lane, Lanes } from './ReactFiberLane';
 
 import {
   NoLane,
@@ -21,11 +21,12 @@ import {
 
 export opaque type EventPriority = Lane;
 
+// React 内部优先级 - 事件I/O优先级 - Lane
 export const NoEventPriority: EventPriority = NoLane;
-export const DiscreteEventPriority: EventPriority = SyncLane;
-export const ContinuousEventPriority: EventPriority = InputContinuousLane;
-export const DefaultEventPriority: EventPriority = DefaultLane;
-export const IdleEventPriority: EventPriority = IdleLane;
+export const DiscreteEventPriority: EventPriority = SyncLane; // 离散事件，例如 click, input, focus...
+export const ContinuousEventPriority: EventPriority = InputContinuousLane; // 连续事件，例如 drag, mousemove
+export const DefaultEventPriority: EventPriority = DefaultLane; // 默认优先级，例如通过计时器周期性触发更新
+export const IdleEventPriority: EventPriority = IdleLane; // 空闲情况优先级
 
 export function higherEventPriority(
   a: EventPriority,
@@ -52,8 +53,9 @@ export function eventPriorityToLane(updatePriority: EventPriority): Lane {
   return updatePriority;
 }
 
+// Lane - React Priority => Scheduler Priority
 export function lanesToEventPriority(lanes: Lanes): EventPriority {
-  const lane = getHighestPriorityLane(lanes);
+  const lane = getHighestPriorityLane(lanes); // 获取优先级最高的 lane
   if (!isHigherEventPriority(DiscreteEventPriority, lane)) {
     return DiscreteEventPriority;
   }

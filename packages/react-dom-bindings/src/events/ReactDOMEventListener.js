@@ -7,22 +7,22 @@
  * @flow
  */
 
-import type {EventPriority} from 'react-reconciler/src/ReactEventPriorities';
-import type {AnyNativeEvent} from '../events/PluginModuleType';
-import type {Fiber, FiberRoot} from 'react-reconciler/src/ReactInternalTypes';
+import type { EventPriority } from 'react-reconciler/src/ReactEventPriorities';
+import type { AnyNativeEvent } from '../events/PluginModuleType';
+import type { Fiber, FiberRoot } from 'react-reconciler/src/ReactInternalTypes';
 import type {
   Container,
   ActivityInstance,
   SuspenseInstance,
 } from '../client/ReactFiberConfigDOM';
-import type {DOMEventName} from '../events/DOMEventNames';
+import type { DOMEventName } from '../events/DOMEventNames';
 
 import {
   isDiscreteEventThatRequiresHydration,
   clearIfContinuousEvent,
   queueIfContinuousEvent,
 } from './ReactDOMEventReplaying';
-import {attemptSynchronousHydration} from 'react-reconciler/src/ReactFiberReconciler';
+import { attemptSynchronousHydration } from 'react-reconciler/src/ReactFiberReconciler';
 import {
   getNearestMountedFiber,
   getContainerFromFiber,
@@ -34,7 +34,7 @@ import {
   ActivityComponent,
   SuspenseComponent,
 } from 'react-reconciler/src/ReactWorkTags';
-import {type EventSystemFlags, IS_CAPTURE_PHASE} from './EventSystemFlags';
+import { type EventSystemFlags, IS_CAPTURE_PHASE } from './EventSystemFlags';
 
 import getEventTarget from './getEventTarget';
 import {
@@ -42,13 +42,14 @@ import {
   getClosestInstanceFromNode,
 } from '../client/ReactDOMComponentTree';
 
-import {dispatchEventForPluginEventSystem} from './DOMPluginEventSystem';
+import { dispatchEventForPluginEventSystem } from './DOMPluginEventSystem';
 import {
   getCurrentUpdatePriority,
   setCurrentUpdatePriority,
 } from '../client/ReactDOMUpdatePriority';
 
 import {
+  // Scheduler Priority => React Priority
   getCurrentPriorityLevel as getCurrentSchedulerPriorityLevel,
   IdlePriority as IdleSchedulerPriority,
   ImmediatePriority as ImmediateSchedulerPriority,
@@ -63,7 +64,7 @@ import {
   IdleEventPriority,
 } from 'react-reconciler/src/ReactEventPriorities';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
-import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
+import { isRootDehydrated } from 'react-reconciler/src/ReactFiberShellHydration';
 
 // TODO: can we stop exporting these?
 let _enabled: boolean = true;

@@ -7,10 +7,10 @@
  * @flow
  */
 
-import type {FiberRoot} from './ReactInternalTypes';
-import type {Lane, Lanes} from './ReactFiberLane';
-import type {PriorityLevel} from 'scheduler/src/SchedulerPriorities';
-import type {Transition} from 'react/src/ReactStartTransition';
+import type { FiberRoot } from './ReactInternalTypes';
+import type { Lane, Lanes } from './ReactFiberLane';
+import type { PriorityLevel } from 'scheduler/src/SchedulerPriorities';
+import type { Transition } from 'react/src/ReactStartTransition';
 
 import {
   disableLegacyMode,
@@ -51,7 +51,7 @@ import {
   isWorkLoopSuspendedOnData,
   performWorkOnRoot,
 } from './ReactFiberWorkLoop';
-import {LegacyRoot} from './ReactRootTags';
+import { LegacyRoot } from './ReactRootTags';
 import {
   ImmediatePriority as ImmediateSchedulerPriority,
   UserBlockingPriority as UserBlockingSchedulerPriority,
@@ -81,7 +81,7 @@ import {
   resetNestedUpdateFlag,
   syncNestedUpdateFlag,
 } from './ReactProfilerTimer';
-import {peekEntangledActionLane} from './ReactFiberAsyncAction';
+import { peekEntangledActionLane } from './ReactFiberAsyncAction';
 
 import noop from 'shared/noop';
 import reportGlobalError from 'shared/reportGlobalError';
@@ -406,15 +406,15 @@ function scheduleTaskForRootDuringMicrotask(
   const nextLanes =
     enableYieldingBeforePassive && root === rootWithPendingPassiveEffects
       ? // This will schedule the callback at the priority of the lane but we used to
-        // always schedule it at NormalPriority. Discrete will flush it sync anyway.
-        // So the only difference is Idle and it doesn't seem necessarily right for that
-        // to get upgraded beyond something important just because we're past commit.
-        pendingPassiveEffectsLanes
+      // always schedule it at NormalPriority. Discrete will flush it sync anyway.
+      // So the only difference is Idle and it doesn't seem necessarily right for that
+      // to get upgraded beyond something important just because we're past commit.
+      pendingPassiveEffectsLanes
       : getNextLanes(
-          root,
-          root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
-          rootHasPendingCommit,
-        );
+        root,
+        root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
+        rootHasPendingCommit,
+      );
 
   const existingCallbackNode = root.callbackNode;
   if (
@@ -477,6 +477,7 @@ function scheduleTaskForRootDuringMicrotask(
       cancelCallback(existingCallbackNode);
     }
 
+    // EventPriority => Scheduler Priority
     let schedulerPriorityLevel;
     switch (lanesToEventPriority(nextLanes)) {
       // Scheduler does have an "ImmediatePriority", but now that we use
@@ -713,11 +714,11 @@ export function requestTransitionLane(
     currentEventTransitionLane =
       actionScopeLane !== NoLane
         ? // We're inside an async action scope. Reuse the same lane.
-          actionScopeLane
+        actionScopeLane
         : // We may or may not be inside an async action scope. If we are, this
-          // is the first update in that scope. Either way, we need to get a
-          // fresh transition lane.
-          claimNextTransitionUpdateLane();
+        // is the first update in that scope. Either way, we need to get a
+        // fresh transition lane.
+        claimNextTransitionUpdateLane();
   }
   return currentEventTransitionLane;
 }

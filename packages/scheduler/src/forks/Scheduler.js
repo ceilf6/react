@@ -489,6 +489,7 @@ function unstable_cancelCallback(task: Task) {
   task.callback = null;
 }
 
+// Scheduler Priority => React Priority
 function unstable_getCurrentPriorityLevel(): PriorityLevel {
   return currentPriorityLevel;
 }

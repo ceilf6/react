@@ -7,12 +7,18 @@
  * @flow strict
  */
 
-export type PriorityLevel = 0 | 1 | 2 | 3 | 4 | 5;
+// Scheduler 优先级 - 独立包、通用性
+export const NoPriority = Symbol('NoPriority');
+export const ImmediatePriority = Symbol('ImmediatePriority');
+export const UserBlockingPriority = Symbol('UserBlockingPriority');
+export const NormalPriority = Symbol('NormalPriority');
+export const LowPriority = Symbol('LowPriority');
+export const IdlePriority = Symbol('IdlePriority');
 
-// TODO: Use symbols?
-export const NoPriority = 0;
-export const ImmediatePriority = 1;
-export const UserBlockingPriority = 2;
-export const NormalPriority = 3;
-export const LowPriority = 4;
-export const IdlePriority = 5;
+export type PriorityLevel =
+  | typeof NoPriority
+  | typeof ImmediatePriority
+  | typeof UserBlockingPriority
+  | typeof NormalPriority
+  | typeof LowPriority
+  | typeof IdlePriority;
