@@ -1584,6 +1584,8 @@ function updateReducerImpl<S, A>(
 
     // Mark that the fiber performed work, but only if the new state is
     // different from the current state.
+    // updateReducer 内部在计算新的状态时
+    // 更新前后计算出来的 state 仍然没有变化 => 命中 bailout策略
     if (!is(newState, hook.memoizedState)) {
       markWorkInProgressReceivedUpdate();
 

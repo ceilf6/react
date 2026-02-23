@@ -523,10 +523,12 @@ function updateMemoComponent(
     // This will be the props with resolved defaultProps,
     // unlike current.memoizedProps which will be the unresolved ones.
     const prevProps = currentChild.memoizedProps;
+    // 比较函数，默认浅比较
     // Default to shallow comparison
     let compare = Component.compare;
     compare = compare !== null ? compare : shallowEqual;
     if (compare(prevProps, nextProps) && current.ref === workInProgress.ref) {
+      // 如果 props 经比较未变化，且 ref 不变，则命中 bailout 策略
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
   }
@@ -3739,7 +3741,9 @@ function updateScopeComponent(
   return workInProgress.child;
 }
 
-// 设置 didReceiveUpdate => bailout
+// 类似于 redux 这种限制单一、可预测的思想
+// 该方法设置 didReceiveUpdate => bailout
+// 那么就可以通过搜索 markWorkInProgressReceivedUpdate 逆向找到 bailout 策略的触发逻辑
 export function markWorkInProgressReceivedUpdate() {
   didReceiveUpdate = true;
 }
