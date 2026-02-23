@@ -3734,6 +3734,7 @@ function dispatchSetState<S, A>(
   markUpdateInDevTools(fiber, lane, action);
 }
 
+// eagerState 策略
 function dispatchSetStateInternal<S, A>(
   fiber: Fiber,
   queue: UpdateQueue<S, A>,
@@ -3757,7 +3758,9 @@ function dispatchSetStateInternal<S, A>(
     if (
       fiber.lanes === NoLanes &&
       (alternate === null || alternate.lanes === NoLanes)
+      // current 和 wip 都需要 NoLanes
     ) {
+      // 更新队列为空时，这意味着我们可以在进入渲染阶段之前急切地计算下一个状态。 如果新状态与当前状态相同，我们或许可以完全摆脱困境。
       // The queue is currently empty, which means we can eagerly compute the
       // next state before entering the render phase. If the new state is the
       // same as the current state, we may be able to bail out entirely.
@@ -3770,14 +3773,20 @@ function dispatchSetStateInternal<S, A>(
         }
         try {
           const currentState: S = (queue.lastRenderedState: any);
+          // 也就是 memoizedState
           const eagerState = lastRenderedReducer(currentState, action);
+          // 基于 action 提前计算 state
+          // 将急切计算的状态和用于计算它的缩减器存储在更新对象上。
+          // 如果在我们进入渲染阶段时 reducer 没有改变，那么可以使用 eager 状态而无需再次调用 reducer。
           // Stash the eagerly computed state, and the reducer used to compute
           // it, on the update object. If the reducer hasn't changed by the
           // time we enter the render phase, then the eager state can be used
           // without calling the reducer again.
-          update.hasEagerState = true;
-          update.eagerState = eagerState;
+          update.hasEagerState = true; // 标记该 update 存在 eagerState
+          update.eagerState = eagerState; // 存储 eagerState 的值
+          // 记录后标识为第一个更新，假如没有命中仍可以作为后续更新的基础 state
           if (is(eagerState, currentState)) {
+            // 更新前后状态没有变化 => 命中 eagerState策略，不会进入 schedule 阶段
             // Fast path. We can bail out without scheduling React to re-render.
             // It's still possible that we'll need to rebase this update later,
             // if the component re-renders for a different reason and by that
