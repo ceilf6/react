@@ -2976,23 +2976,35 @@ function mountDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
 
 const updateDebugValue = mountDebugValue;
 
+// useCallback 的 mount 阶段执行
 function mountCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
+  // 依旧一开始创建 hook 对象
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
+  // 把要缓存的函数和依赖数组存储到 hook.memoizedState 上
   hook.memoizedState = [callback, nextDeps];
+  // 对外返回缓存函数
   return callback;
 }
 
+// useCallback 的 update 阶段执行
 function updateCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
+  // 拿到 hook 对象
   const hook = updateWorkInProgressHook();
+  // 新依赖项
   const nextDeps = deps === undefined ? null : deps;
+  // 之前的 State
   const prevState = hook.memoizedState;
   if (nextDeps !== null) {
+    // 之前依赖项
     const prevDeps: Array<mixed> | null = prevState[1];
+    // 对比是否变化
     if (areHookInputsEqual(nextDeps, prevDeps)) {
+      // 如果相同返回 callback
       return prevState[0];
     }
   }
+  // 不相同：重新缓存
   hook.memoizedState = [callback, nextDeps];
   return callback;
 }
