@@ -456,6 +456,7 @@ function updateForwardRef(
   }
 
   if (current !== null && !didReceiveUpdate) {
+    // bailoutOnAlreadyFinishedWork 命中 bailout 策略
     bailoutHooks(current, workInProgress, renderLanes);
     return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
   }
@@ -1009,6 +1010,7 @@ function updateDehydratedActivityComponent(
       lazilyPropagateParentContextChanges(current, workInProgress, renderLanes);
     }
 
+    // .childLanes => 快速判断当前 Fiber 的子树是否有属于本次 renderLanes 的更新
     // We use lanes to indicate that a child might depend on context, so if
     // any context has changed, we need to treat is as if the input might have changed.
     const hasContextChanged = includesSomeLane(renderLanes, current.childLanes);
@@ -3737,6 +3739,7 @@ function updateScopeComponent(
   return workInProgress.child;
 }
 
+// 设置 didReceiveUpdate => bailout
 export function markWorkInProgressReceivedUpdate() {
   didReceiveUpdate = true;
 }
@@ -3763,6 +3766,7 @@ function resetSuspendedCurrentOnMountInLegacyMode(
   }
 }
 
+// 命中 bailout 策略后，会进一步判断优化程度
 function bailoutOnAlreadyFinishedWork(
   current: Fiber | null,
   workInProgress: Fiber,
@@ -3782,6 +3786,7 @@ function bailoutOnAlreadyFinishedWork(
 
   // Check if the children have any pending work.
   if (!includesSomeLane(renderLanes, workInProgress.childLanes)) {
+    // 整颗子树都命中 bailout 策略
     // The children don't have any work either. We can skip them.
     // TODO: Once we add back resuming, we should check if the children are
     // a work-in-progress set. If so, we need to transfer their effects.
@@ -3798,6 +3803,7 @@ function bailoutOnAlreadyFinishedWork(
     }
   }
 
+  // 该 FiberNode 没有命中 bailout，但它的子树命中了。克隆子 FiberNode 并继续
   // This fiber doesn't have work, but its subtree does. Clone the child
   // fibers and continue.
   cloneChildFibers(current, workInProgress);
@@ -4183,6 +4189,7 @@ function beginWork(
 
     // 判断能否复用
     if (
+      // 对 props 对象做全等比较
       oldProps !== newProps ||
       hasLegacyContextChanged() ||
       // Force a re-render if the implementation changed due to hot reload:
@@ -4190,7 +4197,7 @@ function beginWork(
     ) {
       // If props or context changed, mark the fiber as having performed work.
       // This may be unset if the props are determined to be equal later (memo).
-      didReceiveUpdate = true;
+      didReceiveUpdate = true; // => bailout
     } else {
       // Neither props nor legacy context changes. Check if there's a pending
       // update or context change.
@@ -4216,7 +4223,7 @@ function beginWork(
       if ((current.flags & ForceUpdateForLegacySuspense) !== NoFlags) {
         // This is a special case that only exists for legacy mode.
         // See https://github.com/facebook/react/pull/19216.
-        didReceiveUpdate = true;
+        didReceiveUpdate = true; // Legacy Context
       } else {
         // An update was scheduled on this fiber, but there are no new props
         // nor legacy context. Set this to false. If an update queue or context
