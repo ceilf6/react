@@ -161,13 +161,15 @@ import { callComponentInDEV } from './ReactFiberCallUserSpace';
 
 import { scheduleGesture } from './ReactFiberGestureScheduler';
 
+// FC 对应的 Update 结构
 export type Update<S, A> = {
-  lane: Lane,
+  lane: Lane, // 优先级 - 紧急程度
   revertLane: Lane,
-  action: A,
+  action: A, // 承载更新内容
+  // eagerState 策略 - 性能优化
   hasEagerState: boolean,
   eagerState: S | null,
-  next: Update<S, A>,
+  next: Update<S, A>, // 更新顺序
   gesture: null | ScheduledGesture, // enableGestureTransition
 };
 
@@ -1346,7 +1348,7 @@ function updateReducerImpl<S, A>(
   current: Hook,
   reducer: (S, A) => S,
 ): [S, Dispatch<A>] {
-  // 拿到对应的更新队列
+  // 拿到对应的更新队列 updateQueue
   const queue = hook.queue;
 
   if (queue === null) {
@@ -1572,6 +1574,7 @@ function updateReducerImpl<S, A>(
       }
       update = update.next;
     } while (update !== null && update !== first);
+    // 直到 updateQueue 空
 
     if (newBaseQueueLast === null) {
       newBaseState = newState;

@@ -84,8 +84,8 @@
 // regardless of priority. Intermediate state may vary according to system
 // resources, but the final state is always the same.
 
-import type {Fiber, FiberRoot} from './ReactInternalTypes';
-import type {Lanes, Lane} from './ReactFiberLane';
+import type { Fiber, FiberRoot } from './ReactInternalTypes';
+import type { Lanes, Lane } from './ReactFiberLane';
 
 import {
   NoLane,
@@ -110,7 +110,7 @@ import {
 } from './ReactFiberFlags';
 import getComponentNameFromFiber from './getComponentNameFromFiber';
 
-import {StrictLegacyMode} from './ReactTypeOfMode';
+import { StrictLegacyMode } from './ReactTypeOfMode';
 import {
   markSkippedUpdateLanes,
   isUnsafeClassRenderPhaseUpdate,
@@ -120,7 +120,7 @@ import {
   enqueueConcurrentClassUpdate,
   unsafe_markUpdateLaneFromFiberToRoot,
 } from './ReactFiberConcurrentUpdates';
-import {setIsStrictModeForDevtools} from './ReactFiberDevToolsHook';
+import { setIsStrictModeForDevtools } from './ReactFiberDevToolsHook';
 
 import assign from 'shared/assign';
 import {
@@ -140,22 +140,27 @@ export type Update<State> = {
 
 export type SharedQueue<State> = {
   pending: Update<State> | null,
+  // shared.pending 会将触发更新后产生的 update 保存为单向环状链表
   lanes: Lanes,
   hiddenCallbacks: Array<() => mixed> | null,
 };
 
+// 由 update 组成的链表型队列
+// 在 updateReducerImpl 中进行遍历执行
 export type UpdateQueue<State> = {
-  baseState: State,
-  firstBaseUpdate: Update<State> | null,
-  lastBaseUpdate: Update<State> | null,
+  baseState: State, // 类似于 master 分支，参与计算的初始基准状态
+  firstBaseUpdate: Update<State> | null, // 更新前链表头节点
+  lastBaseUpdate: Update<State> | null, // 更新前链表尾节点
   shared: SharedQueue<State>,
+  // 触发更新后产生的 update 保存在 shared.pending 中形成单向环状链表
+  // 在计算时该环状链表会拼接在 lastBaseUpdate 后，即接入 baseUpdate
   callbacks: Array<() => mixed> | null,
 };
 
-export const UpdateState = 0;
-export const ReplaceState = 1;
-export const ForceUpdate = 2;
-export const CaptureUpdate = 3;
+export const UpdateState = 0; // 默认在 ReactDOM.createRoot-HostRoot 和 this.setState-ClassComponent 的 Update 结构
+export const ReplaceState = 1; // 类组件生命周期中改变 this.state
+export const ForceUpdate = 2; // this.forceUpdate 
+export const CaptureUpdate = 3; // 如 getDerivedStateFormError 在发生错误时触发更新
 
 // Global state that is reset at the beginning of calling `processUpdateQueue`.
 // It should only be read right after calling `processUpdateQueue`, via
@@ -207,15 +212,22 @@ export function cloneUpdateQueue<State>(
   }
 }
 
+// ReactDOM.createRoot-HostRoot 和 this.setState-ClassComponent 的 Update 结构
 export function createUpdate(lane: Lane): Update<mixed> {
   const update: Update<mixed> = {
-    lane,
+    lane, // 优先级 - 紧急程度
 
-    tag: UpdateState,
-    payload: null,
-    callback: null,
+    tag: UpdateState, // 区分触发更新的场景
+    /*
+    UpdateState = 0; // 默认在 ReactDOM.createRoot-HostRoot 和 this.setState-ClassComponent 的 Update 结构
+    ReplaceState = 1; // 类组件生命周期中改变 this.state
+    ForceUpdate = 2; // this.forceUpdate 
+    CaptureUpdate = 3; // 如 getDerivedStateFormError 在发生错误时触发更新
+    */
+    payload: null, // 承载更新内容
+    callback: null, // UI 渲染后触发的回调函数
 
-    next: null,
+    next: null, // 更新顺序
   };
   return update;
 }
@@ -241,9 +253,9 @@ export function enqueueUpdate<State>(
       const componentName = getComponentNameFromFiber(fiber);
       console.error(
         'An update (setState, replaceState, or forceUpdate) was scheduled ' +
-          'from inside an update function. Update functions should be pure, ' +
-          'with zero side-effects. Consider using componentDidUpdate or a ' +
-          'callback.\n\nPlease update the following component: %s',
+        'from inside an update function. Update functions should be pure, ' +
+        'with zero side-effects. Consider using componentDidUpdate or a ' +
+        'callback.\n\nPlease update the following component: %s',
         componentName,
       );
       didWarnUpdateInsideUpdate = true;
@@ -656,108 +668,108 @@ export function processUpdateQueue<State>(
           // unravel them when transferring them to the base queue.
           const firstPendingUpdate =
             ((lastPendingUpdate.next: any): Update<State>);
-          lastPendingUpdate.next = null;
-          update = firstPendingUpdate;
-          queue.lastBaseUpdate = lastPendingUpdate;
-          queue.shared.pending = null;
+              lastPendingUpdate.next = null;
+              update = firstPendingUpdate;
+              queue.lastBaseUpdate = lastPendingUpdate;
+              queue.shared.pending = null;
         }
       }
     } while (true);
 
-    if (newLastBaseUpdate === null) {
-      newBaseState = newState;
+              if (newLastBaseUpdate === null) {
+                newBaseState = newState;
     }
 
-    queue.baseState = ((newBaseState: any): State);
-    queue.firstBaseUpdate = newFirstBaseUpdate;
-    queue.lastBaseUpdate = newLastBaseUpdate;
+              queue.baseState = ((newBaseState: any): State);
+              queue.firstBaseUpdate = newFirstBaseUpdate;
+              queue.lastBaseUpdate = newLastBaseUpdate;
 
-    if (firstBaseUpdate === null) {
-      // `queue.lanes` is used for entangling transitions. We can set it back to
-      // zero once the queue is empty.
-      queue.shared.lanes = NoLanes;
+              if (firstBaseUpdate === null) {
+                // `queue.lanes` is used for entangling transitions. We can set it back to
+                // zero once the queue is empty.
+                queue.shared.lanes = NoLanes;
     }
 
-    // Set the remaining expiration time to be whatever is remaining in the queue.
-    // This should be fine because the only two other things that contribute to
-    // expiration time are props and context. We're already in the middle of the
-    // begin phase by the time we start processing the queue, so we've already
-    // dealt with the props. Context in components that specify
-    // shouldComponentUpdate is tricky; but we'll have to account for
-    // that regardless.
-    markSkippedUpdateLanes(newLanes);
-    workInProgress.lanes = newLanes;
-    workInProgress.memoizedState = newState;
+              // Set the remaining expiration time to be whatever is remaining in the queue.
+              // This should be fine because the only two other things that contribute to
+              // expiration time are props and context. We're already in the middle of the
+              // begin phase by the time we start processing the queue, so we've already
+              // dealt with the props. Context in components that specify
+              // shouldComponentUpdate is tricky; but we'll have to account for
+              // that regardless.
+              markSkippedUpdateLanes(newLanes);
+              workInProgress.lanes = newLanes;
+              workInProgress.memoizedState = newState;
   }
 
-  if (__DEV__) {
-    currentlyProcessingQueue = null;
+              if (__DEV__) {
+                currentlyProcessingQueue = null;
   }
 }
 
 function callCallback(callback: () => mixed, context: any) {
   if (typeof callback !== 'function') {
     throw new Error(
-      'Invalid argument passed as callback. Expected a function. Instead ' +
-        `received: ${callback}`,
-    );
+              'Invalid argument passed as callback. Expected a function. Instead ' +
+              `received: ${callback}`,
+              );
   }
 
-  callback.call(context);
+              callback.call(context);
 }
 
-export function resetHasForceUpdateBeforeProcessing() {
-  hasForceUpdate = false;
+              export function resetHasForceUpdateBeforeProcessing() {
+                hasForceUpdate = false;
 }
 
-export function checkHasForceUpdateAfterProcessing(): boolean {
+              export function checkHasForceUpdateAfterProcessing(): boolean {
   return hasForceUpdate;
 }
 
-export function deferHiddenCallbacks<State>(
-  updateQueue: UpdateQueue<State>,
-): void {
+              export function deferHiddenCallbacks<State>(
+                updateQueue: UpdateQueue<State>,
+                  ): void {
   // When an update finishes on a hidden component, its callback should not
   // be fired until/unless the component is made visible again. Stash the
   // callback on the shared queue object so it can be fired later.
   const newHiddenCallbacks = updateQueue.callbacks;
-  if (newHiddenCallbacks !== null) {
+                  if (newHiddenCallbacks !== null) {
     const existingHiddenCallbacks = updateQueue.shared.hiddenCallbacks;
-    if (existingHiddenCallbacks === null) {
-      updateQueue.shared.hiddenCallbacks = newHiddenCallbacks;
+                  if (existingHiddenCallbacks === null) {
+                    updateQueue.shared.hiddenCallbacks = newHiddenCallbacks;
     } else {
-      updateQueue.shared.hiddenCallbacks =
-        existingHiddenCallbacks.concat(newHiddenCallbacks);
+                    updateQueue.shared.hiddenCallbacks =
+                    existingHiddenCallbacks.concat(newHiddenCallbacks);
     }
   }
 }
 
-export function commitHiddenCallbacks<State>(
-  updateQueue: UpdateQueue<State>,
-  context: any,
-): void {
+                  export function commitHiddenCallbacks<State>(
+                    updateQueue: UpdateQueue<State>,
+                      context: any,
+                      ): void {
   // This component is switching from hidden -> visible. Commit any callbacks
   // that were previously deferred.
   const hiddenCallbacks = updateQueue.shared.hiddenCallbacks;
-  if (hiddenCallbacks !== null) {
-    updateQueue.shared.hiddenCallbacks = null;
-    for (let i = 0; i < hiddenCallbacks.length; i++) {
+                      if (hiddenCallbacks !== null) {
+                        updateQueue.shared.hiddenCallbacks = null;
+                      for (let i = 0; i < hiddenCallbacks.length; i++) {
       const callback = hiddenCallbacks[i];
-      callCallback(callback, context);
+                      callCallback(callback, context);
     }
   }
 }
 
-export function commitCallbacks<State>(
-  updateQueue: UpdateQueue<State>,
-  context: any,
-): void {
+                      export function commitCallbacks<State>(
+                        updateQueue: UpdateQueue<State>,
+                          context: any,
+                          ): void {
   const callbacks = updateQueue.callbacks;
-  if (callbacks !== null) {
-    updateQueue.callbacks = null;
-    for (let i = 0; i < callbacks.length; i++) {
+                          if (callbacks !== null) {
+                            updateQueue.callbacks = null;
+                          for (let i = 0; i < callbacks.length; i++) {
       const callback = callbacks[i];
-      callCallback(callback, context);
+                          callCallback(callback, context);
     }
   }
 }
