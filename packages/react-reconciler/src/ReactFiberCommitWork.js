@@ -648,7 +648,7 @@ function commitLayoutEffectOnFiber(
 
       if (flags & Ref) {
         safelyAttachRef(finishedWork, finishedWork.return);
-      }
+      } // 在 Layout 子阶段重新赋值新的 ref
       break;
     }
     case HostRoot: {
@@ -2121,6 +2121,7 @@ function commitMutationEffectsOnFiber(
 
       if (flags & Ref) {
         if (!offscreenSubtreeWasHidden && current !== null) {
+          // 在 commit-mutation 时删除旧的 ref
           safelyDetachRef(current, current.return);
         }
       }
@@ -2145,7 +2146,7 @@ function commitMutationEffectsOnFiber(
         if (flags & Ref) {
           if (!offscreenSubtreeWasHidden && current !== null) {
             safelyDetachRef(current, current.return);
-          }
+          } // 在 commit-mutation 时删除旧的 ref
         }
 
         if (flags & Update) {
@@ -2219,7 +2220,7 @@ function commitMutationEffectsOnFiber(
         if (flags & Ref) {
           if (!offscreenSubtreeWasHidden && current !== null) {
             safelyDetachRef(current, current.return);
-          }
+          } // 在 commit-mutation 时删除旧的 ref，下面还有很多
         }
         if (current !== null && flags & Update) {
           const newProps = finishedWork.memoizedProps;

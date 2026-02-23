@@ -764,6 +764,7 @@ function commitAttachRef(finishedWork: Fiber) {
       case HostHoistable:
       case HostSingleton:
       case HostComponent:
+        // HostComponent 需要获取对应的 DOM 元素
         instanceToUse = getPublicInstance(finishedWork.stateNode);
         break;
       case ViewTransitionComponent: {
@@ -791,9 +792,11 @@ function commitAttachRef(finishedWork: Fiber) {
         }
       // Fallthrough
       default:
+        // ClassComponent 使用 FiberNode.stateNode 保存实例
         instanceToUse = finishedWork.stateNode;
     }
     if (typeof ref === 'function') {
+      // 函数类型执行传入
       if (shouldProfile(finishedWork)) {
         try {
           startEffectTimer();
@@ -818,7 +821,7 @@ function commitAttachRef(finishedWork: Fiber) {
           );
         }
       }
-
+      // { current: T } 类型则更新 current 指向
       // $FlowFixMe[incompatible-use] unable to narrow type to the non-function case
       ref.current = instanceToUse;
     }
@@ -826,6 +829,7 @@ function commitAttachRef(finishedWork: Fiber) {
 }
 
 // Capture errors so they don't interrupt mounting.
+// 用于在 commit-Layout 时 commitLayoutEffectOnFiber 中删除旧的 ref
 export function safelyAttachRef(
   current: Fiber,
   nearestMountedAncestor: Fiber | null,
@@ -841,6 +845,9 @@ export function safelyAttachRef(
   }
 }
 
+// 用于在 commit-mutation 时 commitMutationEffectsOnFiber 中删除旧的 ref
+// 相较于原先的 commitDetachRef ，自带了错误隔离
+// 保证 ref 回调里就算抛错，也不会把整个 commit 阶段打断
 export function safelyDetachRef(
   current: Fiber,
   nearestMountedAncestor: Fiber | null,
@@ -850,6 +857,7 @@ export function safelyDetachRef(
 
   if (ref !== null) {
     if (typeof refCleanup === 'function') {
+      // 执行函数类型ref
       try {
         if (shouldProfile(current)) {
           try {
@@ -903,6 +911,7 @@ export function safelyDetachRef(
         captureCommitPhaseError(current, nearestMountedAncestor, error);
       }
     } else {
+      // { current: T } 类型的 ref，重置 current 指向
       // $FlowFixMe[incompatible-use] unable to narrow type to RefObject
       ref.current = null;
     }

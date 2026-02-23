@@ -1380,12 +1380,14 @@ function updateProfiler(
   return workInProgress.child;
 }
 
+// useRef / createRef 在 render 阶段时标记 ref flag
 function markRef(current: Fiber | null, workInProgress: Fiber) {
   // TODO: Check props.ref instead of fiber.ref when enableRefAsProp is on.
   const ref = workInProgress.ref;
   if (ref === null) {
     if (current !== null && current.ref !== null) {
       // Schedule a Ref effect
+      // |= 位运算加入
       workInProgress.flags |= Ref | RefStatic;
     }
   } else {

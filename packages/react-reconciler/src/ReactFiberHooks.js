@@ -2667,14 +2667,17 @@ function createEffectInstance(): EffectInstance {
   return { destroy: undefined };
 }
 
+// useRef - mount
 function mountRef<T>(initialValue: T): { current: T } {
   const hook = mountWorkInProgressHook();
-  const ref = { current: initialValue };
+  const ref = { current: initialValue }; // ref对象得解一层 .current 的原因
   hook.memoizedState = ref;
   return ref;
 }
 
+// useRef - updateRef
 function updateRef<T>(initialValue: T): { current: T } {
+  // 拿到之前的 hook 对象然后返回
   const hook = updateWorkInProgressHook();
   return hook.memoizedState;
 }

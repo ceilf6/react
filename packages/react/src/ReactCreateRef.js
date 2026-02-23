@@ -6,9 +6,10 @@
  * @flow
  */
 
-import type {RefObject} from 'shared/ReactTypes';
+import type { RefObject } from 'shared/ReactTypes';
 
 // an immutable object with a single mutable value
+// 和 useRef - mountRef 产生的相同格式的 refObj 即 { current: T }
 export function createRef(): RefObject {
   const refObject = {
     current: null,
