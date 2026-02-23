@@ -3779,6 +3779,8 @@ function commitRoot(
       // So we can clear these now to allow a new callback to be scheduled.
       root.callbackNode = null;
       root.callbackPriority = NoLane;
+      // useEffect 特有的 异步调度
+      // 来自 Scheduler 暴露的 Scheduler_scheduleCallback，用于以某一优先级调度回调函数
       scheduleCallback(NormalSchedulerPriority, () => {
         if (enableProfilerTimer && enableComponentPerformanceTrack) {
           // Track the currently executing event if there is one so we can ignore this
@@ -3788,6 +3790,7 @@ function commitRoot(
         if (pendingDelayedCommitReason === IMMEDIATE_COMMIT) {
           pendingDelayedCommitReason = DELAYED_PASSIVE_COMMIT;
         }
+        // flushPassiveEffects 会执行所有 effects
         flushPassiveEffects();
         // This render triggered passive effects: release the root cache pool
         // *after* passive effects fire to avoid freeing a cache pool that may
@@ -4646,6 +4649,7 @@ export function flushPendingEffects(): boolean {
   return flushPassiveEffects();
 }
 
+// 执行所有 effects
 function flushPassiveEffects(): boolean {
   if (pendingEffectsStatus !== PENDING_PASSIVE_PHASE) {
     return false;
@@ -4683,6 +4687,9 @@ function flushPassiveEffects(): boolean {
   }
 }
 
+// 原先通过 do..while 的 commit → 立刻循环 flush
+// 在 React 18 后 => 用调度模型 scheduleCallback，
+// 实现 useEffect 这种 passive effects 不能阻塞 commit
 function flushPassiveEffectsImpl() {
   // Cache and clear the transitions flag
   const transitions = pendingPassiveTransitions;
@@ -4786,6 +4793,7 @@ function flushPassiveEffectsImpl() {
     ) {
       currentPendingTransitionCallbacks = null;
       currentEndTime = null;
+      // 调度模型
       scheduleCallback(IdleSchedulerPriority, () => {
         processTransitionCallbacks(
           prevPendingTransitionCallbacks,
@@ -5471,6 +5479,8 @@ export function restorePendingUpdaters(root: FiberRoot, lanes: Lanes): void {
 
 const fakeActCallbackNode = {};
 // $FlowFixMe[missing-local-annot]
+
+// 来自 Scheduler 暴露的 Scheduler_scheduleCallback，用于以某一优先级调度回调函数
 function scheduleCallback(priorityLevel: any, callback) {
   if (__DEV__) {
     // If we're currently inside an `act` scope, bypass Scheduler and push to

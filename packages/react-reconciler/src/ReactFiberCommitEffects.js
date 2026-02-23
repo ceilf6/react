@@ -12,14 +12,14 @@ import type {
   ProfilerProps,
   ProfilerPhase,
 } from 'shared/ReactTypes';
-import type {Fiber} from './ReactInternalTypes';
-import type {UpdateQueue} from './ReactFiberClassUpdateQueue';
-import type {FunctionComponentUpdateQueue} from './ReactFiberHooks';
-import type {HookFlags} from './ReactHookEffectTags';
-import type {FragmentInstanceType} from './ReactFiberConfig';
-import type {ViewTransitionState} from './ReactFiberViewTransitionComponent';
+import type { Fiber } from './ReactInternalTypes';
+import type { UpdateQueue } from './ReactFiberClassUpdateQueue';
+import type { FunctionComponentUpdateQueue } from './ReactFiberHooks';
+import type { HookFlags } from './ReactHookEffectTags';
+import type { FragmentInstanceType } from './ReactFiberConfig';
+import type { ViewTransitionState } from './ReactFiberViewTransitionComponent';
 
-import {getViewTransitionName} from './ReactFiberViewTransitionComponent';
+import { getViewTransitionName } from './ReactFiberViewTransitionComponent';
 
 import {
   enableProfilerTimer,
@@ -37,15 +37,15 @@ import {
   HostSingleton,
   ViewTransitionComponent,
 } from './ReactWorkTags';
-import {NoFlags} from './ReactFiberFlags';
+import { NoFlags } from './ReactFiberFlags';
 import getComponentNameFromFiber from 'react-reconciler/src/getComponentNameFromFiber';
-import {resolveClassComponentProps} from './ReactFiberClassComponent';
+import { resolveClassComponentProps } from './ReactFiberClassComponent';
 import {
   recordEffectDuration,
   startEffectTimer,
   isCurrentUpdateNested,
 } from './ReactProfilerTimer';
-import {NoMode, ProfileMode} from './ReactTypeOfMode';
+import { NoMode, ProfileMode } from './ReactTypeOfMode';
 import {
   commitCallbacks,
   commitHiddenCallbacks,
@@ -65,7 +65,7 @@ import {
   Insertion as HookInsertion,
   Passive as HookPassive,
 } from './ReactHookEffectTags';
-import {didWarnAboutReassigningProps} from './ReactFiberBeginWork';
+import { didWarnAboutReassigningProps } from './ReactFiberBeginWork';
 import {
   markComponentPassiveEffectMountStarted,
   markComponentPassiveEffectMountStopped,
@@ -84,7 +84,7 @@ import {
   callDestroyInDEV,
 } from './ReactFiberCallUserSpace';
 
-import {runWithFiberInDEV} from './ReactCurrentFiber';
+import { runWithFiberInDEV } from './ReactCurrentFiber';
 
 function shouldProfile(current: Fiber): boolean {
   return (
@@ -138,6 +138,7 @@ export function commitHookLayoutUnmountEffects(
   }
 }
 
+// 副作用执行阶段 - 依次执行 create
 export function commitHookEffectListMount(
   flags: HookFlags,
   finishedWork: Fiber,
@@ -226,7 +227,7 @@ export function commitHookEffectListMount(
                 (n, a) => {
                   console.error(
                     '%s must not return anything besides a function, ' +
-                      'which is used for clean-up.%s',
+                    'which is used for clean-up.%s',
                     n,
                     a,
                   );
@@ -245,6 +246,7 @@ export function commitHookEffectListMount(
   }
 }
 
+// 副作用执行阶段 - 依次执行 destory
 export function commitHookEffectListUnmount(
   flags: HookFlags,
   finishedWork: Fiber,
@@ -260,6 +262,7 @@ export function commitHookEffectListUnmount(
       do {
         if ((effect.tag & flags) === flags) {
           // Unmount
+          // destroy 销毁函数是从 inst 实例上拿到
           const inst = effect.inst;
           const destroy = inst.destroy;
           if (destroy !== undefined) {
@@ -354,20 +357,20 @@ export function commitClassLayoutLifecycles(
         if (instance.props !== finishedWork.memoizedProps) {
           console.error(
             'Expected %s props to match memoized props before ' +
-              'componentDidMount. ' +
-              'This might either be because of a bug in React, or because ' +
-              'a component reassigns its own `this.props`. ' +
-              'Please file an issue.',
+            'componentDidMount. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.props`. ' +
+            'Please file an issue.',
             getComponentNameFromFiber(finishedWork) || 'instance',
           );
         }
         if (instance.state !== finishedWork.memoizedState) {
           console.error(
             'Expected %s state to match memoized state before ' +
-              'componentDidMount. ' +
-              'This might either be because of a bug in React, or because ' +
-              'a component reassigns its own `this.state`. ' +
-              'Please file an issue.',
+            'componentDidMount. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.state`. ' +
+            'Please file an issue.',
             getComponentNameFromFiber(finishedWork) || 'instance',
           );
         }
@@ -424,20 +427,20 @@ export function commitClassLayoutLifecycles(
         if (instance.props !== finishedWork.memoizedProps) {
           console.error(
             'Expected %s props to match memoized props before ' +
-              'componentDidUpdate. ' +
-              'This might either be because of a bug in React, or because ' +
-              'a component reassigns its own `this.props`. ' +
-              'Please file an issue.',
+            'componentDidUpdate. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.props`. ' +
+            'Please file an issue.',
             getComponentNameFromFiber(finishedWork) || 'instance',
           );
         }
         if (instance.state !== finishedWork.memoizedState) {
           console.error(
             'Expected %s state to match memoized state before ' +
-              'componentDidUpdate. ' +
-              'This might either be because of a bug in React, or because ' +
-              'a component reassigns its own `this.state`. ' +
-              'Please file an issue.',
+            'componentDidUpdate. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.state`. ' +
+            'Please file an issue.',
             getComponentNameFromFiber(finishedWork) || 'instance',
           );
         }
@@ -530,20 +533,20 @@ export function commitClassCallbacks(finishedWork: Fiber) {
         if (instance.props !== finishedWork.memoizedProps) {
           console.error(
             'Expected %s props to match memoized props before ' +
-              'processing the update queue. ' +
-              'This might either be because of a bug in React, or because ' +
-              'a component reassigns its own `this.props`. ' +
-              'Please file an issue.',
+            'processing the update queue. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.props`. ' +
+            'Please file an issue.',
             getComponentNameFromFiber(finishedWork) || 'instance',
           );
         }
         if (instance.state !== finishedWork.memoizedState) {
           console.error(
             'Expected %s state to match memoized state before ' +
-              'processing the update queue. ' +
-              'This might either be because of a bug in React, or because ' +
-              'a component reassigns its own `this.state`. ' +
-              'Please file an issue.',
+            'processing the update queue. ' +
+            'This might either be because of a bug in React, or because ' +
+            'a component reassigns its own `this.state`. ' +
+            'Please file an issue.',
             getComponentNameFromFiber(finishedWork) || 'instance',
           );
         }
@@ -647,20 +650,20 @@ export function commitClassSnapshot(finishedWork: Fiber, current: Fiber) {
       if (instance.props !== finishedWork.memoizedProps) {
         console.error(
           'Expected %s props to match memoized props before ' +
-            'getSnapshotBeforeUpdate. ' +
-            'This might either be because of a bug in React, or because ' +
-            'a component reassigns its own `this.props`. ' +
-            'Please file an issue.',
+          'getSnapshotBeforeUpdate. ' +
+          'This might either be because of a bug in React, or because ' +
+          'a component reassigns its own `this.props`. ' +
+          'Please file an issue.',
           getComponentNameFromFiber(finishedWork) || 'instance',
         );
       }
       if (instance.state !== finishedWork.memoizedState) {
         console.error(
           'Expected %s state to match memoized state before ' +
-            'getSnapshotBeforeUpdate. ' +
-            'This might either be because of a bug in React, or because ' +
-            'a component reassigns its own `this.state`. ' +
-            'Please file an issue.',
+          'getSnapshotBeforeUpdate. ' +
+          'This might either be because of a bug in React, or because ' +
+          'a component reassigns its own `this.state`. ' +
+          'Please file an issue.',
           getComponentNameFromFiber(finishedWork) || 'instance',
         );
       }
@@ -687,7 +690,7 @@ export function commitClassSnapshot(finishedWork: Fiber, current: Fiber) {
         runWithFiberInDEV(finishedWork, () => {
           console.error(
             '%s.getSnapshotBeforeUpdate(): A snapshot value (or null) ' +
-              'must be returned. You have returned undefined.',
+            'must be returned. You have returned undefined.',
             getComponentNameFromFiber(finishedWork),
           );
         });
@@ -810,7 +813,7 @@ function commitAttachRef(finishedWork: Fiber) {
         } else if (!ref.hasOwnProperty('current')) {
           console.error(
             'Unexpected ref object provided for %s. ' +
-              'Use either a ref-setter function or React.createRef().',
+            'Use either a ref-setter function or React.createRef().',
             getComponentNameFromFiber(finishedWork),
           );
         }
@@ -910,7 +913,7 @@ function safelyCallDestroy(
   current: Fiber,
   nearestMountedAncestor: Fiber | null,
   destroy: (() => void) | (({...}) => void),
-  resource?: {...} | void | null,
+resource ?: { ...} | void | null,
 ) {
   // $FlowFixMe[extra-arg] @poteto this is safe either way because the extra arg is ignored if it's not a CRUD effect
   const destroy_ = resource == null ? destroy : destroy.bind(null, resource);
@@ -938,7 +941,7 @@ function commitProfiler(
   commitStartTime: number,
   effectDuration: number,
 ) {
-  const {id, onCommit, onRender} = (finishedWork.memoizedProps: ProfilerProps);
+  const { id, onCommit, onRender } = (finishedWork.memoizedProps: ProfilerProps);
 
   let phase: ProfilerPhase = current === null ? 'mount' : 'update';
   if (enableProfilerNestedUpdatePhase) {
@@ -1000,7 +1003,7 @@ function commitProfilerPostCommitImpl(
   commitStartTime: number,
   passiveEffectDuration: number,
 ): void {
-  const {id, onPostCommit} = finishedWork.memoizedProps;
+  const { id, onPostCommit } = finishedWork.memoizedProps;
 
   let phase = current === null ? 'mount' : 'update';
   if (enableProfilerNestedUpdatePhase) {

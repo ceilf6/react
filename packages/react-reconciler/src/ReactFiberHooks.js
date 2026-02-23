@@ -217,12 +217,15 @@ type EffectInstance = {
   destroy: void | (() => void),
 };
 
+// 副作用
 export type Effect = {
-  tag: HookFlags,
+  tag: HookFlags, // 用于区分 effect 类型 Passive |  Layout | Insertion '/packages/react-reconciler/src/ReactHookEffectTags.js'
   inst: EffectInstance,
-  create: () => (() => void) | void,
-  deps: Array<mixed> | void | null,
-  next: Effect,
+  // 老版有 destory 销毁函数，重构后是 inst 实例对象
+  // 让 Effect 成为数据静态描述对象定义，与 实例 commit运行态分离
+  create: () => (() => void) | void, // effect 回调函数
+  deps: Array<mixed> | void | null, // 依赖项
+  next: Effect, // 与当前 FC 的其他 effect 形成环状链表
 };
 
 type StoreInstance<T> = {
@@ -450,6 +453,7 @@ function throwInvalidHookError() {
   );
 }
 
+// 比较两个依赖项数组是否相同 - 浅比较
 function areHookInputsEqual(
   nextDeps: Array<mixed>,
   prevDeps: Array<mixed> | null,
@@ -491,6 +495,7 @@ function areHookInputsEqual(
   // $FlowFixMe[incompatible-use] found when upgrading Flow
   for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
     // $FlowFixMe[incompatible-use] found when upgrading Flow
+    // 使用 Object.is 进行比较
     if (is(nextDeps[i], prevDeps[i])) {
       continue;
     }
@@ -1011,6 +1016,10 @@ function mountWorkInProgressHook(): Hook {
   return workInProgressHook;
 }
 
+/**
+ * 在更新阶段，根据 current fiber 上的 hook 链表，克隆出对应的 workInProgress hook，并维护 hook 链表的遍历顺序
+ * @returns 
+ */
 function updateWorkInProgressHook(): Hook {
   // This function is used both for updates and for re-renders triggered by a
   // render phase update. It assumes there is either a current hook we can
@@ -2607,6 +2616,8 @@ function rerenderActionState<S, P>(
   return [state, dispatch, false];
 }
 
+// 原先的 pushEffect 随着 effect 和 实例 的分解，解偶成了 pushSimpleEffect 和 pushEffectImpl
+// 构造一个 Effect 描述对象, 生成 FC 的单向环状链表
 function pushSimpleEffect(
   tag: HookFlags,
   inst: EffectInstance,
@@ -2624,19 +2635,28 @@ function pushSimpleEffect(
   return pushEffectImpl(effect);
 }
 
+// 纯粹地把 effect 挂到当前 fiber.updateQueue.lastEffect 的环形链表
 function pushEffectImpl(effect: Effect): Effect {
   let componentUpdateQueue: null | FunctionComponentUpdateQueue =
     (currentlyRenderingFiber.updateQueue: any);
   if (componentUpdateQueue === null) {
+    // 第一个 effect
+    // createFunctionComponentUpdateQueue 调用后会返回一个对象
+    // { lastEffect, events, stores, memoCache}
     componentUpdateQueue = createFunctionComponentUpdateQueue();
+    // fiber 的 updateQueue 上面保存了该对象（componentUpdateQueue）
     currentlyRenderingFiber.updateQueue = (componentUpdateQueue: any);
   }
   const lastEffect = componentUpdateQueue.lastEffect;
   if (lastEffect === null) {
     componentUpdateQueue.lastEffect = effect.next = effect;
   } else {
+    // 如果之前有副作用，先存储到 firstEffect
     const firstEffect = lastEffect.next;
+    // lastEffect 指向新的副作用对象
     lastEffect.next = effect;
+    // 新的副作用对象的 next 指向之前的副作用对象
+    // 最终形成一个环形链表
     effect.next = firstEffect;
     componentUpdateQueue.lastEffect = effect;
   }
@@ -2659,15 +2679,20 @@ function updateRef<T>(initialValue: T): { current: T } {
   return hook.memoizedState;
 }
 
+// 副作用 声明阶段 mount
 function mountEffectImpl(
   fiberFlags: Flags,
   hookFlags: HookFlags,
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
 ): void {
+  // 生成 hook 对象
   const hook = mountWorkInProgressHook();
+  // 保存依赖数组
   const nextDeps = deps === undefined ? null : deps;
+  // 当前 FiberNode 的 flag
   currentlyRenderingFiber.flags |= fiberFlags;
+  // 将 pushSimpleEffect 返回的环形链表存储到 hook 对象的 memoizedState 中
   hook.memoizedState = pushSimpleEffect(
     HookHasEffect | hookFlags,
     createEffectInstance(),
@@ -2676,13 +2701,16 @@ function mountEffectImpl(
   );
 }
 
+// 副作用 声明阶段 update
 function updateEffectImpl(
   fiberFlags: Flags,
   hookFlags: HookFlags,
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
 ): void {
+  // 在更新阶段，根据 current fiber 上的 hook 链表，克隆出对应的 workInProgress hook，并维护 hook 链表的遍历顺序
   const hook = updateWorkInProgressHook();
+  // 拿到依赖项
   const nextDeps = deps === undefined ? null : deps;
   const effect: Effect = hook.memoizedState;
   const inst = effect.inst;
@@ -2691,10 +2719,15 @@ function updateEffectImpl(
   // state update or for strict mode.
   if (currentHook !== null) {
     if (nextDeps !== null) {
+      // 从 hook 对象上面的 memoizedState 上面拿到副作用的环形链表
       const prevEffect: Effect = currentHook.memoizedState;
       const prevDeps = prevEffect.deps;
       // $FlowFixMe[incompatible-call] (@poteto)
+      // 比较依赖项
       if (areHookInputsEqual(nextDeps, prevDeps)) {
+        // 如果依赖的值相同，即依赖没有变化，那么只会给这个 effect 打上一个 HookPassive 一个 tag
+        // 然后在组件渲染完以后会跳过这个 effect 的执行
+        // 即使 effect deps 没有变化，也会创建对应的 effect，才能后保证 effect 数量以及顺序是稳定的
         hook.memoizedState = pushSimpleEffect(
           hookFlags,
           inst,
@@ -2706,8 +2739,11 @@ function updateEffectImpl(
     }
   }
 
+  // 如果deps依赖项发生改变，就会打上 effectTag ，在commit节点，就会再次执行我们的effect
   currentlyRenderingFiber.flags |= fiberFlags;
 
+  // pushSimpleEffect 的作用是将当前 effect 添加到 FiberNode 的 updateQueue 中，然后返回这个当前 effcet
+  // 然后是把返回的当前 effect 保存到 Hook 节点的 memoizedState 属性中
   hook.memoizedState = pushSimpleEffect(
     HookHasEffect | hookFlags,
     inst,
