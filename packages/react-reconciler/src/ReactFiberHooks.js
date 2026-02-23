@@ -2998,7 +2998,7 @@ function updateCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
   if (nextDeps !== null) {
     // 之前依赖项
     const prevDeps: Array<mixed> | null = prevState[1];
-    // 对比是否变化
+    // 对比依赖项是否变化
     if (areHookInputsEqual(nextDeps, prevDeps)) {
       // 如果相同返回 callback
       return prevState[0];
@@ -3009,14 +3009,17 @@ function updateCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
   return callback;
 }
 
+// useMemo 的 mount 阶段执行
+// 类似于 mountCallback ，只不过从 callback函数 => nextValue值
 function mountMemo<T>(
   nextCreate: () => T,
   deps: Array<mixed> | void | null,
 ): T {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
-  const nextValue = nextCreate();
+  const nextValue = nextCreate(); // 执行传入的计算函数
   if (shouldDoubleInvokeUserFnsInHooksDEV) {
+    // 在严格模式下对传入的计算函数做纯度检测，看有没有不应该带的副作用
     setIsStrictModeForDevtools(true);
     try {
       nextCreate();
@@ -3028,6 +3031,7 @@ function mountMemo<T>(
   return nextValue;
 }
 
+// useMemo 的 update 阶段执行
 function updateMemo<T>(
   nextCreate: () => T,
   deps: Array<mixed> | void | null,
@@ -3038,10 +3042,13 @@ function updateMemo<T>(
   // Assume these are defined. If they're not, areHookInputsEqual will warn.
   if (nextDeps !== null) {
     const prevDeps: Array<mixed> | null = prevState[1];
+    // 和 updateCallback 一样对比依赖项
     if (areHookInputsEqual(nextDeps, prevDeps)) {
+      // 如果没变返回缓存值
       return prevState[0];
     }
   }
+  // 依赖变化就执行计算函数重新计算、缓存
   const nextValue = nextCreate();
   if (shouldDoubleInvokeUserFnsInHooksDEV) {
     setIsStrictModeForDevtools(true);
